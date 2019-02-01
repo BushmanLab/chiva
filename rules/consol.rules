@@ -1,0 +1,17 @@
+# -*- mode: Snakemake -*-
+# Sequence Consolidating Rules
+
+rule consolidate:
+  input:
+    PROC_DIR + "/analysis_data/{sample}.{read}.filt.fastq.gz"
+  output:
+    consol=PROC_DIR + "/analysis_data/{sample}.{read}.consol.fasta",
+    key=PROC_DIR + "/analysis_data/{sample}.{read}.key.csv"
+  params:
+    tool=CODE_DIR + "/consol.R"
+  log:
+    PROC_DIR + "/logs/{sample}.{read}.consol.log"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * config["consolMb"]
+  shell:
+    "Rscript {params.tool} {input} -o {output.consol} -k {output.key} > {log} 2>&1"

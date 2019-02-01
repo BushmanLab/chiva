@@ -1,0 +1,38 @@
+# Simulation output check sums (md5)
+
+file1 :
+    name : "standardized_uniq_sites.rds"
+    path : "etc/tests/HIV_test/output_data/standardized_uniq_sites.rds"
+    md5  : "aefa03dd5b104d9507e6097770414034"
+    
+file2 :
+    name : "condensed_sites.csv"
+    path : "etc/tests/HIV_test/output_data/condensed_sites.csv"
+    md5  : "ade5e37e43b888732bd62e15c1570375"
+
+file3 :
+    name : "xofil_condensed_sites.csv"
+    path : "etc/tests/HIV_test/output_data/xofil_condensed_sites.csv"
+    md5  : "ade5e37e43b888732bd62e15c1570375"
+
+file4 :
+    name : "read_site_matrix.csv"
+    path : "etc/tests/HIV_test/output_data/read_site_matrix.csv"
+    md5  : "5096ea95255bb719ddc1aeb96ed0124f"
+
+file5 :
+    name : "fragment_site_matrix.csv"
+    path : "etc/tests/HIV_test/output_data/fragment_site_matrix.csv"
+    md5  : "cbdfea15cfeb045bed21e91bbadee6c5"
+    
+file6 :
+    name : "summary_table.csv"
+    path : "etc/tests/HIV_test/output_data/summary_table.csv"
+    md5  : "aa7c49254f973fa92ec95c8d4ad61ad8"
+    
+file7 :
+    name : "report.sites.csv"
+    path : "etc/tests/HIV_test/output_data/report.sites.csv"
+    md5  : "917bec419c9a0502336cf3a37e44b635"
+    
+

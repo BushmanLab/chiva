@@ -1,0 +1,82 @@
+# -*- mode: Snakemake -*-
+# Post-Alignment Processing: BLAT
+
+rule post_align:
+  input:
+    sampleR1=PROC_DIR + "/analysis_data/{sample}.R1.psl.gz",
+    sampleR2=PROC_DIR + "/analysis_data/{sample}.R2.psl.gz",
+    keyR1=PROC_DIR + "/analysis_data/{sample}.R1.key.csv",
+    keyR2=PROC_DIR + "/analysis_data/{sample}.R2.key.csv"
+  output:
+    uniq=PROC_DIR + "/analysis_data/uniqSites/{sample}.uniq.csv",
+    chimera=PROC_DIR + "/analysis_data/chimeras/{sample}.chimera.rds",
+    multihit=PROC_DIR + "/analysis_data/multihits/{sample}.multihits.rds"
+  params:
+    tool=CODE_DIR + "/couple.R",
+    ref=config["Ref_Genome"]
+  log:
+    PROC_DIR + "/logs/{sample}.couple.log"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * config["coupleMb"]
+  shell:
+    """
+    Rscript {params.tool} {input.sampleR2} {input.sampleR1} \
+      -k {input.keyR2} {input.keyR1} \
+      -o {output.uniq} --chimera {output.chimera} --multihit {output.multihit} \
+      -g {params.ref} > {log} 2>&1
+    """
+
+rule all_uniq_sites:
+  input:
+    expand(PROC_DIR + "/analysis_data/uniqSites/{sample}.uniq.csv", sample=SAMPLES)
+  output:
+    PROC_DIR + "/analysis_data/unique_sites." + RUN + ".csv"
+  shell:
+    """
+    OUT_DIR="{PROC_DIR}/analysis_data"
+    head -n 1 -q ${{OUT_DIR}}/uniqSites/* | uniq > {output}
+    cat ${{OUT_DIR}}/uniqSites/* | sed '/seqnames/d' >> {output}
+    """
+
+rule initial_assessment:
+  input:
+    PROC_DIR + "/analysis_data/unique_sites." + RUN + ".csv"
+  output:
+    stdSites=PROC_DIR + "/output_data/standardized_uniq_sites.rds",
+    condSites=PROC_DIR + "/output_data/condensed_sites.csv",
+    xofilSites=PROC_DIR + "/output_data/xofil_condensed_sites.csv",
+    readMat=PROC_DIR + "/output_data/read_site_matrix.csv",
+    fragMat=PROC_DIR + "/output_data/fragment_site_matrix.csv",
+    sumTbl=PROC_DIR + "/output_data/summary_table.csv"
+  params:
+    tool=CODE_DIR + "/initial_assessment.R",
+    proc=PROC_DIR + "/output_data"
+  log:
+    PROC_DIR + "/logs/" + RUN + ".init.assessment.log"
+  shell:
+    "Rscript {params.tool} {input} {params.proc} > {log} 2>&1"
+    
+def report_supp(wildcards):
+  supp_str = str()
+  if (config["figures"]): 
+      supp_str = supp_str + "-f "
+  if (config["reportData"]):
+      supp_str = supp_str + "-d "
+  if (config["suppFile"]):
+      supp_str = supp_str + "-s " + str(ROOT_DIR) + "/" + config["Supplemental_Info"]
+  supp_str = supp_str + "-t " + config["reportFormat"]
+  return supp_str
+        
+rule run_report:
+  input: PROC_DIR + "/output_data/standardized_uniq_sites.rds"
+  output: PROC_DIR + "/output_data/report." + RUN + "." + config["reportFormat"]
+  params: 
+    tool = CODE_DIR + "/generate_HIV_report.R",
+    config = PROC_DIR + "/" + RUN + ".config.yml",
+    supp = report_supp
+  log: PROC_DIR + "/logs/" + RUN + ".report.log"
+  shell:
+    """
+    Rscript {params.tool} {input} -o {output} \
+      -c {params.config} {params.supp} > {log} 2>&1
+    """

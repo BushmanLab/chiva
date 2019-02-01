@@ -1,0 +1,18 @@
+# Sequence Filtering Rules
+
+rule seq_filter:
+  input:
+    R1=PROC_DIR + "/analysis_data/{sample}.R1.trim.fastq.gz",
+    R2=PROC_DIR + "/analysis_data/{sample}.R2.trim.fastq.gz"
+  output:
+    R1=temp(PROC_DIR + "/analysis_data/{sample}.R1.filt.fastq.gz"),
+    R2=temp(PROC_DIR + "/analysis_data/{sample}.R2.filt.fastq.gz")
+  params: 
+    tool=CODE_DIR + "/filt.R"
+  log:
+    PROC_DIR + "/logs/{sample}.filt.log"
+  shell:
+    """
+    Rscript {params.tool} {input.R1} {input.R2} -o {output.R1} {output.R2} \
+      --compress > {log} 2>&1
+    """
