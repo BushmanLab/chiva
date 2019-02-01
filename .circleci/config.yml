@@ -1,0 +1,33 @@
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+version: 2
+jobs:
+  build:
+    machine: true
+    #docker:
+    #  - image: circleci/ruby:2.4.1
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "etc/build.v0.1.0.txt" }}
+
+      - run:
+          name: install
+          command: |
+            bash install.sh -v
+
+      - run:
+          name: run tests
+          command: |
+            bash tests/test.sh
+
+      - save_cache:
+          paths:
+            - ~/miniconda3
+          key: v1-dependencies-{{ checksum "etc/build.v0.1.0.txt" }}
