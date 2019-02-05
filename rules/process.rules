@@ -30,7 +30,7 @@ rule all_uniq_sites:
   input:
     expand(PROC_DIR + "/analysis_data/uniqSites/{sample}.uniq.csv", sample=SAMPLES)
   output:
-    PROC_DIR + "/analysis_data/unique_sites." + RUN + ".csv"
+    PROC_DIR + "/output_data/unique_sites." + RUN + ".csv"
   shell:
     """
     OUT_DIR="{PROC_DIR}/analysis_data"
