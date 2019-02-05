@@ -246,11 +246,11 @@ Clonal expansion can be assessed by quantifying the number of inferred cells sam
 * ~ indicates the gene is a cancer related gene
 * ! indicates the gene was associated with lymphoma in humans
 
-```{r clonal_barplots, fig.height=5, fig.width=7, fig.cap=fig_caps[1]}
+```{r clonal_barplots, fig.height=5, fig.width=7}
 # Parmeters
 top_gene_cnt <- 10
 pats_per_row <- 3
-spec_per_row <- 6
+spec_per_row <- 8
 
 considered_pats <- unique(summary_tbl$patient)
 considered_pats <- considered_pats[!grepl("UTC", considered_pats)]
@@ -453,6 +453,10 @@ for(i in seq_along(row_list)){
 
 ```
 
+```{r}
+cat(fig_caps[1])
+```
+
 ```{r} 
 if( args$format == "pdf" ){
   cat("\\newpage")
@@ -465,7 +469,7 @@ if( args$format == "pdf" ){
 
 Integration frequency refers to the repeated observation of integration within the same region. Below in figure 2, transcription units were used as reference regions to determine the 10 most frequent regions per patient. This analysis pools clones identified across conditions. The x-axis denotes the number of unique integrations or clones identified associated with the transcription unit (name denoted to the left of the plot). The size of the point indicates how many different specimens clones were observed in and the color indicates the sum of each clones maximal abundance. Transcription unit or gene names included indicators previously mentioned.
 
-```{r gene_freq_plots, fig.height=5, fig.width=7, fig.cap=fig_caps[2]}
+```{r gene_freq_plots, fig.height=5, fig.width=7}
 top_gene_cnt <- 10
 max_specs_per_pat <- dplyr::group_by(summary_tbl, patient) %>%
   dplyr::summarise(cnt = n()) %$%
@@ -547,6 +551,10 @@ for( i in freq_fig_rows ){
   
 }
 
+```
+
+```{r}
+cat(fig_caps[2])
 ```
 
 ```{r} 

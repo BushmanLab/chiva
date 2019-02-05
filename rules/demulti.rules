@@ -18,7 +18,8 @@ rule demultiplex:
     bc1=config["barcode1"],
     bc2=config["barcode2"],
     bc1Mis=config["bc1Mismatch"],
-    bc2Mis=config["bc2Mismatch"]
+    bc2Mis=config["bc2Mismatch"],
+    maxN=config["maxNcount"]
   log:
     PROC_DIR + "/logs/demultiplex." + RUN + ".log"
   threads:
@@ -31,5 +32,6 @@ rule demultiplex:
       --read1 {input.R1} --read2 {input.R2} --idx1 {input.I1} \
       --bc1 {params.bc1} --bc1Len {params.bc1Len} --bc1Mis {params.bc1Mis} \
       --bc2 {params.bc2} --bc2Len {params.bc2Len} --bc2Mis {params.bc2Mis} \
-      -o {params.proc}/analysis_data -c {threads} --compress > {log} 2>&1
+      --maxN {params.maxN} -o {params.proc}/analysis_data \
+      -c {threads} --compress > {log} 2>&1
     """

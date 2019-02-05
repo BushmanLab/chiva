@@ -37,6 +37,10 @@ R2_LTR = choose_sequence_data(config["R2_LTRBit_Seq"], sampleInfo)
 TERM_CA = config["Require_TermCA"]
 R2_OVER = config["R2_Overreading_Trim"]
 
+# Default params if not included in config
+if not "maxNcount" in config:
+    config["maxNcount"] = 1
+
 # Working paths
 ROOT_DIR = ""
 try:
