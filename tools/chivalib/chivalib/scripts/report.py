@@ -22,7 +22,7 @@ def main( argv = sys.argv ):
     if not r_script.is_file():
         sys.stderr.write(
             "Error: Could not find a {0} in directory '{1}'\n".format(
-                "generate_cHIVa_report.R", args.chiva_dir + "/tools/rscripts/"
+                "generate_cHIVa_report.R", root_dir + "/tools/rscripts/"
             )
         )
         sys.exit(1)

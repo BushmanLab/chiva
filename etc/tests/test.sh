@@ -13,8 +13,7 @@ source ${HOME}/miniconda3/etc/profile.d/conda.sh
 conda activate ${__CHIVA_ENV}
 
 # Create test analysis directory
-chiva setup configs/HIV_test.config.yml -- -np
-chiva setup configs/HIV_test.config.yml -- --nolock
+chiva setup configs/HIV_test.config.yml
 
 # Generate test DAG graph
 chiva run configs/HIV_test.config.yml -- -np

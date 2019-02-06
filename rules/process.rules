@@ -40,7 +40,7 @@ rule all_uniq_sites:
 
 rule initial_assessment:
   input:
-    PROC_DIR + "/analysis_data/unique_sites." + RUN + ".csv"
+    PROC_DIR + "/output_data/unique_sites." + RUN + ".csv"
   output:
     stdSites=PROC_DIR + "/output_data/standardized_uniq_sites.rds",
     condSites=PROC_DIR + "/output_data/condensed_sites.csv",
