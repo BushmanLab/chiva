@@ -1,0 +1,88 @@
+# -*- mode: Snakemake -*-
+# Look into turning the metadata into a dictionary
+# Sequence Trimming Rules
+
+rule seq_trim_linker:
+  input:
+    PROC_DIR + "/analysis_data/{sample}.R1.fastq.gz"
+  output:
+    seq=temp(PROC_DIR + "/analysis_data/{sample}.R1.trim.fastq.gz"),
+    primerID=PROC_DIR + "/analysis_data/{sample}.primerid.fastq.gz"
+  params:
+    tool=CODE_DIR + "/trim.R",
+    lead=lambda wildcards: R1_LEAD[wildcards.sample],
+    leadMis=config["R1leadMismatch"],
+    over=lambda wildcards: R1_OVER[wildcards.sample],
+    overMis=config["R1overMismatch"]
+  log:
+    PROC_DIR + "/logs/{sample}.R1.trim.log"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * config["trimMb"]
+  shell:
+    """
+    Rscript {params.tool} {input} -o {output.seq} \
+      -l {params.lead} --leadMismatch {params.leadMis} \
+      -r {params.over} --overMismatch {params.overMis} \
+      --collectRandomIDs {output.primerID} --compress > {log} 2>&1
+    """
+
+rule seq_trim_primer:
+  input:
+    PROC_DIR + "/analysis_data/{sample}.R2.fastq.gz"
+  output:
+    temp(PROC_DIR + "/analysis_data/{sample}.R2.trim.primer.fastq.gz")
+  params:
+    tool=CODE_DIR + "/trim.R",
+    lead=lambda wildcards: R2_LEAD_PRIMER[wildcards.sample],
+    leadMis=config["R2primerMismatch"],
+    over=R2_OVER,
+    overMis=config["R2overMismatch"]
+  log:
+    PROC_DIR + "/logs/{sample}.R2.trim.primer.log"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * config["trimMb"]
+  shell:
+    """
+    Rscript {params.tool} {input} -o {output} \
+      -l {params.lead} --leadMismatch {params.leadMis} \
+      -r {params.over} --overMismatch {params.overMis} \
+      --compress > {log} 2>&1
+    """
+
+rule seq_trim_ltr:
+  input:
+    PROC_DIR + "/analysis_data/{sample}.R2.trim.primer.fastq.gz"
+  output:
+    temp(PROC_DIR + "/analysis_data/{sample}.R2.trim.ltr.fastq.gz")
+  params:
+    tool=CODE_DIR + "/trim.R",
+    lead=lambda wildcards: R2_LTR[wildcards.sample],
+    leadMis=config["R2bitMismatch"]
+  log:
+    PROC_DIR + "/logs/{sample}.R2.trim.ltr.log"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * config["trimMb"]
+  shell:
+    """
+    Rscript {params.tool} {input} -o {output} \
+      -l {params.lead} --leadMismatch {params.leadMis} \
+      --noQualTrimming --compress > {log} 2>&1
+    """
+
+rule seq_trim_CA:
+  input:
+    PROC_DIR + "/analysis_data/{sample}.R2.trim.ltr.fastq.gz"
+  output:
+    temp(PROC_DIR + "/analysis_data/{sample}.R2.trim.fastq.gz")
+  params:
+    tool=CODE_DIR + "/trim.R",
+    lead=TERM_CA
+  log:
+    PROC_DIR + "/logs/{sample}.R2.trim.CA.log"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * config["trimMb"]
+  shell:
+    """
+    Rscript {params.tool} {input} -o {output} \
+      -l {params.lead} --noQualTrimming --compress > {log} 2>&1
+    """

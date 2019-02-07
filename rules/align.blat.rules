@@ -1,0 +1,38 @@
+# -*- mode: Snakemake -*-
+# Sequence Alignment: BLAT
+
+rule align:
+  input:
+    seq = PROC_DIR + "/analysis_data/{sample}.{read}.consol.fasta",
+    genome = config["Ref_Genome_Path"]
+  output:
+    temp(PROC_DIR + "/analysis_data/{sample}.{read}.psl")
+  params:
+    config["BLATparams"]
+  log:
+    PROC_DIR + "/logs/{sample}.{read}.blat.log"
+  resources:
+    mem_mb = lambda wildcards, attempt: attempt * config["BLATMb"]
+  shell:
+    """
+    if [[ $(cat {input.seq} | wc -l) -eq 0 ]]
+        then
+            touch {output}
+            echo 'Empty input sequences for {input.seq}.' > {log} 2>&1
+        else
+            blat {input.genome} {input.seq} {output} \
+                {params} > {log} 2>&1
+    fi
+    """
+
+rule compress_align:
+  input: PROC_DIR + "/analysis_data/{sample}.{read}.psl"
+  output: temp(PROC_DIR + "/analysis_data/{sample}.{read}.psl.gz")
+  shell: "gzip {input}"
+
+rule generate_2bit:
+  input: "configs/" + RUN + ".config.yml"
+  output: temp(config["Ref_Genome_Path"])
+  params: config["Ref_Genome"]
+  shell:
+    "Rscript {CODE_DIR}/generate_2bit_genome.R {params} {output}"

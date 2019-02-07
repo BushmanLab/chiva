@@ -34,3 +34,15 @@ vignettes/*.pdf
 
 # Shiny token, see https://shiny.rstudio.com/articles/shinyapps.html
 rsconnect/
+
+# YAML files associated with processing runs
+configs/*.yml
+
+# Ignore snakemake files
+.snakemake/*
+
+# Ignore Rmd templates
+*.Rmd
+
+# Compressed genome files
+*.2bit

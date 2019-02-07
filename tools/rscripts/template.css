@@ -1,0 +1,30 @@
+caption {
+  display: table-caption;
+  text-align: left;
+  color: #555;
+  font-weight: bold;
+}
+
+p.caption {
+  display: figure-caption;
+  text-align: left;
+  color: #555;
+  font-weight: bold;
+}  
+
+table {
+  margin: 1em auto;
+}
+
+th {
+  text-align: center;
+  padding: 6px;
+  border-bottom: 2px solid #ddd;
+}
+
+td {
+  valign: middle;
+  padding: 8px;
+}
+
+

@@ -1,0 +1,40 @@
+channels:
+  - bioconda
+  - r
+  - conda-forge
+  - bushmanlab
+  - defaults
+dependencies:
+  - snakemake
+  - blat
+  - graphviz
+  - pandoc < 2.0
+  - semantic_version
+  - ruamel.yaml
+  - r=3.4.1
+  - r-base
+  - r-argparse
+  - r-pander
+  - r-yaml
+  - r-tidyverse
+  - r-magrittr
+  - r-data.table
+  - r-matrix
+  - r-igraph
+  - r-rmarkdown < 1.9
+  - r-knitr < 1.18
+  - r-scales
+  - r-rcolorbrewer
+  - r-devtools
+  - r-ggforce
+  - r-gridextra
+  - r-digest
+  - bioconductor-biocgenerics
+  - bioconductor-iranges
+  - bioconductor-genomicranges
+  - bioconductor-hiannotator
+  - bioconductor-biostrings
+  - bioconductor-shortread
+  - bioconductor-rsamtools
+  - bioconductor-bsgenome
+  - bioconductor-bsgenome.hsapiens.ucsc.hg38
