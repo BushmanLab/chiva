@@ -66,7 +66,11 @@ coupleMb : 5000
 
 # Post-processing
 refGenes : 
+<<<<<<< HEAD
     file : "genomes/hg38.refSeq.ext.rds"
+=======
+    file : "/home/nobles/data/util_files/hg38.refSeq.rds"
+>>>>>>> 3fcebfc97bd23dfbafe34cdf2f291807afa1cf11
     symbolCol : "name2"
 oncoGeneList : 
     file : "http://bushmanlab.org/assets/doc/allOnco_Feb2017.tsv"
