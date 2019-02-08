@@ -12,7 +12,7 @@ rule align:
   log:
     PROC_DIR + "/logs/{sample}.{read}.blat.log"
   resources:
-    mem_mb = lambda wildcards, attempt: attempt * config["BLATMb"]
+    mem_mb = lambda wildcards, attempt: attempt * config["alignMB"]
   shell:
     """
     if [[ $(cat {input.seq} | wc -l) -eq 0 ]]
@@ -21,6 +21,30 @@ rule align:
             echo 'Empty input sequences for {input.seq}.' > {log} 2>&1
         else
             blat {input.genome} {input.seq} {output} \
+                {params} > {log} 2>&1
+    fi
+    """
+
+rule align_internalfrags:
+  input:
+    seq = PROC_DIR + "/analysis_data/internalfrags/{sample}.{read}.if.consol.fasta",
+    virgenomes = VIRAL_DIR + "/" + RUN + ".viral.seqs.fasta"
+  output:
+    temp(PROC_DIR + "/analysis_data/internalfrags/{sample}.{read}.if.psl")
+  params:
+    config["viralBLATparams"]
+  log:
+    PROC_DIR + "/logs/{sample}.{read}.if.blat.log"
+  resources:
+    mem_mb = lambda wildcards, attempt: attempt * config["alignMB"]
+  shell:
+    """
+    if [[ $(cat {input.seq} | wc -l) -eq 0 ]]
+        then
+            touch {output}
+            echo 'Empty input sequences for {input.seq}.' > {log} 2>&1
+        else
+            blat {input.virgenomes} {input.seq} {output} \
                 {params} > {log} 2>&1
     fi
     """
@@ -36,3 +60,33 @@ rule generate_2bit:
   params: config["Ref_Genome"]
   shell:
     "Rscript {CODE_DIR}/generate_2bit_genome.R {params} {output}"
+
+rule construct_viral_ref:
+  input: PROC_DIR + "/" + RUN + ".config.yml"
+  output: temp(VIRAL_DIR + "/" + RUN + ".viral.seqs.fasta")
+  params: VIRAL_DIR
+  shell:
+    """
+    for FILE in $(ls {params} | grep .fasta.gz); do
+        gunzip {params}/FILE
+    done
+    
+    cat {params}/*.fasta > {output}
+    """
+
+rule identify_virus_positive_reads:
+  input:
+    R1=PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.if.psl",
+    K1=PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.if.key.csv",
+    R2=PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.if.psl",
+    K2=PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.if.key.csv"
+  output:
+    temp(PROC_DIR + "/analysis_data/internalfrags/{sample}.if.ids.txt")
+  params: 
+    CODE_DIR + "/expand_key_to_ids.R"
+  log: 
+    PROC_DIR + "/logs/{sample}.if.expan.log"
+  shell:
+    """
+    Rscript {params} {input.R1} {input.K1} {input.R2} {input.K2} {output} > {log} 2>&1
+    """

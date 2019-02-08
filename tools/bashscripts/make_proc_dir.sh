@@ -15,6 +15,7 @@ mkdir ${PROCDIR}/analysis_data
 mkdir ${PROCDIR}/analysis_data/uniqSites
 mkdir ${PROCDIR}/analysis_data/chimeras
 mkdir ${PROCDIR}/analysis_data/multihits
+mkdir ${PROCDIR}/analysis_data/internalfrags
 mkdir ${PROCDIR}/output_data
 
 echo "  ${RUN} run has been set up."

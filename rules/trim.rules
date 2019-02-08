@@ -17,7 +17,7 @@ rule seq_trim_linker:
   log:
     PROC_DIR + "/logs/{sample}.R1.trim.log"
   resources:
-    mem_mb=lambda wildcards, attempt: attempt * config["trimMb"]
+    mem_mb=lambda wildcards, attempt: attempt * config["trimMB"]
   shell:
     """
     Rscript {params.tool} {input} -o {output.seq} \
@@ -40,7 +40,7 @@ rule seq_trim_primer:
   log:
     PROC_DIR + "/logs/{sample}.R2.trim.primer.log"
   resources:
-    mem_mb=lambda wildcards, attempt: attempt * config["trimMb"]
+    mem_mb=lambda wildcards, attempt: attempt * config["trimMB"]
   shell:
     """
     Rscript {params.tool} {input} -o {output} \
@@ -61,7 +61,7 @@ rule seq_trim_ltr:
   log:
     PROC_DIR + "/logs/{sample}.R2.trim.ltr.log"
   resources:
-    mem_mb=lambda wildcards, attempt: attempt * config["trimMb"]
+    mem_mb=lambda wildcards, attempt: attempt * config["trimMB"]
   shell:
     """
     Rscript {params.tool} {input} -o {output} \
@@ -80,7 +80,7 @@ rule seq_trim_CA:
   log:
     PROC_DIR + "/logs/{sample}.R2.trim.CA.log"
   resources:
-    mem_mb=lambda wildcards, attempt: attempt * config["trimMb"]
+    mem_mb=lambda wildcards, attempt: attempt * config["trimMB"]
   shell:
     """
     Rscript {params.tool} {input} -o {output} \

@@ -21,6 +21,10 @@ elif ".tsv" in config["Sample_Info"]:
 else:
     raise SystemExit("Sample Info file contain extention '.csv' or '.tsv'.")
 
+# Slashes should always be interpreted as directory separators.
+wildcard_constraints:
+    sample="[^/]+"
+
 ## Sample information
 sampleInfo = import_sample_info(
     config["Sample_Info"], config["Sample_Name_Column"], delim)
@@ -81,7 +85,7 @@ if "Processing_Path" in config:
         if not abs_PROC_DIR.exists():
             raise SystemExit(
                 "Cannot locate processing directory: {}"
-            )
+            ).format(config["Processing_Path"])
         else:
             PROC_DIR = abs_PROC_DIR
 else:
@@ -96,13 +100,39 @@ if not PROC_DIR.exists():
         )
     )
     
+if "Viral_Genomes" in config:
+    VIRAL_DIR = Path(config["Viral_Genomes"])
+    if not VIRAL_DIR.exists():
+        abs_VIRAL_DIR = Path(ROOT_DIR) / str(VIRAL_DIR)
+        if not abs_VIRAL_DIR.exists():
+            raise SystemExit(
+                "Cannot locate viral genome directory: {}"
+            ).format(configs["Viral_Genomes"])
+        else:
+            VIRAL_DIR = abs_VIRAL_DIR
+else:
+    VIRAL_DIR = Path(ROOT_DIR) / "genomes/viral_genomes"
+
+if not VIRAL_DIR.exists():
+    raise SystemExit(
+        "Cannot identify viral genome directory for cHIVa run {}. "
+        "If you don't have any viral sequences, feel free to use the HXB2 "
+        "reference provided with cHIVa. If the {}/genomes/viral_genomes "
+        "path does not exist, then you may need to clone cHIVa again from GitHub."
+        "Double check your config file.".format(
+            config["Run_Name"], ROOT_DIR
+        )
+    )
+    
+    
 # Change to strings
 ROOT_DIR = str(ROOT_DIR)
 CODE_DIR = str(CODE_DIR)
 PROC_DIR = str(PROC_DIR) 
+VIRAL_DIR = str(VIRAL_DIR)
 
 # Check for input files
-R1_SEQ_INPUT = Path(config["R1"])
+R1_SEQ_INPUT = Path(config["Seq_Path"]) / config["R1"]
 if not R1_SEQ_INPUT.exists():
     proc_R1_SEQ_INPUT = Path(PROC_DIR) / config["R1"]
     if not proc_R1_SEQ_INPUT.exists():
@@ -120,12 +150,37 @@ if not R1_SEQ_INPUT.exists():
         R2_SEQ_INPUT = Path(PROC_DIR) / config["R2"]
         I1_SEQ_INPUT = Path(PROC_DIR) / config["I1"]
 else:
-    R2_SEQ_INPUT = Path(config["R2"])
-    I1_SEQ_INPUT = Path(config["I1"])
+    R2_SEQ_INPUT = Path(config["Seq_Path"]) / config["R2"]
+    I1_SEQ_INPUT = Path(config["Seq_Path"]) / config["I1"]
 
 R1_SEQ_INPUT = str(R1_SEQ_INPUT)
 R2_SEQ_INPUT = str(R2_SEQ_INPUT)
 I1_SEQ_INPUT = str(I1_SEQ_INPUT)
+
+## Memory param defaults
+if not "demultiMB" in config:
+    config["demultiMB"] = 16000
+
+if not "trimMB" in config:
+    config["trimMB"] = 4000
+
+if not "filtMB" in config:
+    config["filtMB"] = 4000
+
+if not "consolMB" in config:
+    config["consolMB"] = 4000
+
+if not "alignMB" in config:
+    config["alignMB"] = 4000
+
+if not "coupleMB" in config:
+    config["coupleMB"] = 4000
+
+if not "processMB" in config:
+    config["processMB"] = 4000
+
+if not "reportMB" in config:
+    config["reportMB"] = 4000
 
 
 # Target Rules
@@ -137,7 +192,10 @@ rule all:
         readMat=PROC_DIR + "/output_data/read_site_matrix.csv",
         fragMat=PROC_DIR + "/output_data/fragment_site_matrix.csv",
         sumTbl=PROC_DIR + "/output_data/summary_table.csv",
-        report=PROC_DIR + "/output_data/report." + RUN + "." + config["reportFormat"]
+        report=PROC_DIR + "/output_data/report." + RUN + "." + config["reportFormat"],
+        IFR1=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.internalfrags.fastq.gz", sample=SAMPLES),
+        IFR2=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.internalfrags.fastq.gz", sample=SAMPLES)
+        
 
 # Processing Rules
 include: "rules/demulti.rules"
@@ -146,3 +204,4 @@ include: "rules/filter.rules"
 include: "rules/consol.rules"
 include: "rules/align.blat.rules"
 include: "rules/process.rules"
+include: "rules/ifseqs.rules"

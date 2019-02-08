@@ -1,0 +1,95 @@
+# Internal Fragment related rules
+
+rule collect_hg_reads:
+  input:
+    PROC_DIR + "/analysis_data/uniqSites/{sample}.uniq.csv"
+  output:
+    temp(PROC_DIR + "/analysis_data/{sample}.hg.uniq.reads.txt")
+  shell:
+    "cat {input} | cut -d , -f 9 > {output}"
+    
+rule append_mulithit_ids:
+  input:
+    uniq=PROC_DIR + "/analysis_data/{sample}.hg.uniq.reads.txt",
+    multi=PROC_DIR + "/analysis_data/multihits/{sample}.multihits.rds"
+  output:
+    temp(PROC_DIR + "/analysis_data/{sample}.hg.reads.txt")
+  params:
+    tool=CODE_DIR + "/append_mh_ids.R"
+  log:
+    PROC_DIR + "/logs/{sample}.mh.append.log"
+  shell:
+    "Rscript {params.tool} {input.uniq} {input.multi} {output} > {log} 2>&1"
+    
+rule neg_select_LTR_reads_R1:
+  input:
+    seqs=PROC_DIR + "/analysis_data/{sample}.R1.filt.fastq.gz",
+    ids=PROC_DIR + "/analysis_data/{sample}.hg.reads.txt"
+  output:
+    temp(PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.ns.if.fastq.gz")
+  params: 
+    tool=CODE_DIR + "/filt.R"
+  log:
+    PROC_DIR + "/logs/{sample}.neg.R1.if.filt.log"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * config["filtMB"]
+  shell:
+    """
+    Rscript {params.tool} {input.seqs} -o {output} -i {input.ids} --header \
+      --negSelect --compress > {log} 2>&1
+    """
+
+rule neg_select_LTR_reads_R2:
+  input:
+    seqs=PROC_DIR + "/analysis_data/{sample}.R2.filt.fastq.gz",
+    ids=PROC_DIR + "/analysis_data/{sample}.hg.reads.txt"
+  output:
+    temp(PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.ns.if.fastq.gz")
+  params: 
+    tool=CODE_DIR + "/filt.R"
+  log:
+    PROC_DIR + "/logs/{sample}.neg.R2.if.filt.log"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * config["filtMB"]
+  shell:
+    """
+    Rscript {params.tool} {input.seqs} -o {output} -i {input.ids} --header \
+      --negSelect --compress > {log} 2>&1
+    """
+
+
+rule pos_select_LTR_reads_R1:
+  input:
+    seqs=PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.ns.if.fastq.gz",
+    ids=PROC_DIR + "/analysis_data/internalfrags/{sample}.if.ids.txt"
+  output:
+    PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.internalfrags.fastq.gz"
+  params:
+    tool=CODE_DIR + "/filt.R"
+  log:
+    PROC_DIR + "/logs/{sample}.pos.R1.if.filt.log"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * config["filtMB"]
+  shell:
+    """
+    Rscript {params.tool} {input.seqs} -o {output} -i {input.ids} --header \
+      --compress > {log} 2>&1
+    """
+  
+rule pos_select_LTR_reads_R2:
+  input:
+    seqs=PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.ns.if.fastq.gz",
+    ids=PROC_DIR + "/analysis_data/internalfrags/{sample}.if.ids.txt"
+  output:
+    PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.internalfrags.fastq.gz"
+  params:
+    tool=CODE_DIR + "/filt.R"
+  log:
+    PROC_DIR + "/logs/{sample}.pos.R2.if.filt.log"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * config["filtMB"]
+  shell:
+    """
+    Rscript {params.tool} {input.seqs} -o {output} -i {input.ids} --header \
+      --compress > {log} 2>&1
+    """

@@ -17,7 +17,7 @@ rule post_align:
   log:
     PROC_DIR + "/logs/{sample}.couple.log"
   resources:
-    mem_mb=lambda wildcards, attempt: attempt * config["coupleMb"]
+    mem_mb=lambda wildcards, attempt: attempt * config["coupleMB"]
   shell:
     """
     Rscript {params.tool} {input.sampleR2} {input.sampleR1} \
@@ -53,6 +53,8 @@ rule initial_assessment:
     proc=PROC_DIR + "/output_data"
   log:
     PROC_DIR + "/logs/" + RUN + ".init.assessment.log"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * config["processMB"]
   shell:
     "Rscript {params.tool} {input} {params.proc} > {log} 2>&1"
     
@@ -74,7 +76,10 @@ rule run_report:
     tool = CODE_DIR + "/generate_HIV_report.R",
     config = PROC_DIR + "/" + RUN + ".config.yml",
     supp = report_supp
-  log: PROC_DIR + "/logs/" + RUN + ".report.log"
+  log: 
+    PROC_DIR + "/logs/" + RUN + ".report.log"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * config["reportMB"]
   shell:
     """
     Rscript {params.tool} {input} -o {output} \

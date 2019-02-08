@@ -3,7 +3,7 @@
 
 rule demultiplex:
   input:
-    configFile="configs/" + RUN + ".config.yml",
+    configFile=ancient("configs/" + RUN + ".config.yml"),
     sampleInfo=ancient(config["Sample_Info"]),
     R1=R1_SEQ_INPUT,
     R2=R2_SEQ_INPUT,
@@ -22,9 +22,10 @@ rule demultiplex:
     maxN=config["maxNcount"]
   log:
     PROC_DIR + "/logs/demultiplex." + RUN + ".log"
-  threads: demulti_cores
+  threads: 
+    demulti_cores
   resources:
-    mem_mb=config["demultiMb"]
+    mem_mb=lambda wildcards, attempt: attempt * config["demultiMB"]
   shell:
     """
     Rscript {params.tool} -m {input.sampleInfo} \
