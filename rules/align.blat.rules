@@ -64,15 +64,13 @@ rule generate_2bit:
 rule construct_viral_ref:
   input: PROC_DIR + "/" + RUN + ".config.yml"
   output: temp(VIRAL_DIR + "/" + RUN + ".viral.seqs.fasta")
-  params: VIRAL_DIR
+  params: 
+    dir=VIRAL_DIR,
+    tool=CODE_DIR + "/concat_seq_files.R"
+  log:
+    PROC_DIR + "/logs/" + RUN + "viral.ref.log"
   shell:
-    """
-    for FILE in $(ls {params} | grep .fasta.gz); do
-        gunzip {params}/FILE
-    done
-    
-    cat {params}/*.fasta > {output}
-    """
+    "Rscript {params.tool} {params.dir} {output} > {log} 2>&1"
 
 rule identify_virus_positive_reads:
   input:

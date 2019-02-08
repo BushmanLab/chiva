@@ -5,8 +5,8 @@ rule seq_filter:
     R1=PROC_DIR + "/analysis_data/{sample}.R1.trim.fastq.gz",
     R2=PROC_DIR + "/analysis_data/{sample}.R2.trim.fastq.gz"
   output:
-    R1=temp(PROC_DIR + "/analysis_data/{sample}.R1.filt.fastq.gz"),
-    R2=temp(PROC_DIR + "/analysis_data/{sample}.R2.filt.fastq.gz")
+    R1=PROC_DIR + "/analysis_data/{sample}.R1.filt.fastq.gz",
+    R2=PROC_DIR + "/analysis_data/{sample}.R2.filt.fastq.gz"
   params: 
     tool=CODE_DIR + "/filt.R"
   log:

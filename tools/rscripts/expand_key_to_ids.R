@@ -8,24 +8,25 @@ options(stringsAsFactors = FALSE, scipen = 99, width = 999)
 
 args <- commandArgs(trailingOnly = TRUE)
 
-R1psl <- data.table::fread(
-  args[1], header = FALSE, sep = "\t", data.table = FALSE
-)
+code_dir <- dirname(sub(
+  pattern = "--file=", 
+  replacement = "", 
+  x = grep("--file=", commandArgs(trailingOnly = FALSE), value = TRUE)
+))
 
-K1tbl <- data.table::fread(
-  args[2], header = TRUE, sep = ",", data.table = FALSE
-)
+source(file.path(code_dir, "supporting_scripts/readPSL.R"))
+source(file.path(code_dir, "supporting_scripts/readKeyFile.R"))
 
-R2psl <- data.table::fread(
-  args[3], header = FALSE, sep = "\t", data.table = FALSE
-)
+R1psl <- readPSL(args[1])
 
-K2tbl <- data.table::fread(
-  args[4], header = TRUE, sep = ",", data.table = FALSE
-)
+K1tbl <- readKeyFile(args[2], stringr::str_extract(args[2], "[\\w]+$"))
 
-R1_positive_keys <- unique(R1psl[,10])
-R2_positive_keys <- unique(R2psl[,10])
+R2psl <- readPSL(args[3])
+
+K2tbl <- readKeyFile(args[4], stringr::str_extract(args[4], "[\\w]+$"))
+
+R1_positive_keys <- unique(R1psl$qName)
+R2_positive_keys <- unique(R2psl$qName)
 
 K1_filtered <- K1tbl$readNames[K1tbl$seqID %in% R1_positive_keys]
 K2_filtered <- K2tbl$readNames[K2tbl$seqID %in% R2_positive_keys]
