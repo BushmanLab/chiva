@@ -575,7 +575,9 @@ if( args$data ){
 
 if( args$format == "html" ){
   
-  css_path <- normalizePath(file.path(code_dir, "template.css"))
+  css_path <- normalizePath(
+    file.path(code_dir, "report_templates/template.css")
+  )
   
   rmarkdown::render(
     input = template_path,

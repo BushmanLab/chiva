@@ -30,7 +30,7 @@ header-includes:
   - \usepackage{longtable}
   - \setlength{\defaultaddspace}{0em}
   - \setlength{\parindent}{2em}
-fontsize: 10pt
+fontsize: 11pt
 geometry: margin=0.75in
 ---
 
@@ -129,6 +129,7 @@ if( args$format == "html" ){
   fig_caps <- paste0("Figure ", 1:3, ". ", fig_caps)
 }else{
   tbl_format <- "latex"
+  fig_caps <- paste0("**Figure ", 1:3, ".** ", fig_caps)
 }
 ```
 
@@ -187,7 +188,7 @@ pander(
 
 ```
 
-Each specimen of genomic DNA was randomly sheared through ultrasonication and ligated with barcoded DNA linkers. Nested-PCR was used to amplify from integrated LTR sequences to the linker sequences with barcoded and linker-specific primers. This dual barcoding reduces sample to sample crossover contamination. Amplicons were sequenced on an Illumina platform and the sequencing data processed with a developmental software, available on [**GitHub@cnobles/XXX**](https://github.com/cnobles/XXX). 
+Each specimen of genomic DNA was randomly sheared through ultrasonication and ligated with barcoded DNA linkers. Nested-PCR was used to amplify from integrated LTR sequences to the linker sequences with barcoded and linker-specific primers. This dual barcoding reduces sample to sample crossover contamination. Amplicons were sequenced on an Illumina platform and the sequencing data processed with a developmental software, available on [**GitHub@cnobles/chiva**](https://github.com/cnobles/chiva). 
 
 DNA sequence reads were aligned to the **`r unique(sapply(configs, "[[", "Ref_Genome"))`** reference genome. The number of reads aligning for each specimen is displayed in **Table 1**, along with the number of unique alignments they represent (the inferred cells sampled). Multiple reads may represent a singular alignment of genomic DNA, inherent to sequence analysis of amplified DNA. These alignments indicate individual events of dsODN incorporation and clonal expansion.
 
@@ -246,11 +247,11 @@ Clonal expansion can be assessed by quantifying the number of inferred cells sam
 * ~ indicates the gene is a cancer related gene
 * ! indicates the gene was associated with lymphoma in humans
 
-```{r clonal_barplots, fig.height=5, fig.width=7}
+```{r clonal_barplots, fig.height=4.5, fig.width=7}
 # Parmeters
 top_gene_cnt <- 10
 pats_per_row <- 3
-spec_per_row <- 8
+spec_per_row <- 6
 
 considered_pats <- unique(summary_tbl$patient)
 considered_pats <- considered_pats[!grepl("UTC", considered_pats)]
@@ -274,24 +275,83 @@ spec_vec <- dplyr::filter(summary_tbl, patient %in% considered_pats) %$%
   specimen %>%
   as.integer()
 
-pat_seq <- ceiling(pat_vec / pats_per_row)
-spec_seq <- ceiling(spec_vec / spec_per_row)
-pat_spec_seq <- paste0(pat_seq, ".", spec_seq)
-num_rows <- length(unique(pat_spec_seq))
+row_list <- list()
+pat_list <- list()
 
-pat_spec_list <- split(spec_vec, pat_vec)
-
-split_list <- unlist(
-  lapply(pat_spec_list, function(x){
-    split(x, ceiling(seq_len(length(x)) / spec_per_row))
-  }), 
-  recursive = FALSE
-)
-
-row_list <- split(
-  rep(names(pat_spec_list), lengths(pat_spec_list)),
-  pat_spec_seq
-)
+for( i in spec_vec ){
+  
+  if( length(row_list) == 0 ){
+    row_list[[1]] <- c(i)
+    pat_list[[1]] <- pat_vec[i]
+  }else{
+    row_list[[length(row_list)]] <- c(row_list[[length(row_list)]], i)
+    pat_list[[length(pat_list)]] <- c(pat_list[[length(pat_list)]], pat_vec[i])
+  }
+  
+  if( length(row_list[[length(row_list)]]) > spec_per_row ){
+    
+    row_list[[length(row_list)]] <- row_list[[length(row_list)]][
+      seq_len(length(row_list[[length(row_list)]]) - 1)
+    ]
+    row_list[[length(row_list) + 1]] <- c(i)
+    
+    pat_list[[length(pat_list)]] <- pat_list[[length(pat_list)]][
+      seq_len(length(pat_list[[length(pat_list)]]) - 1)
+    ]
+    pat_list[[length(pat_list) + 1]] <- pat_vec[i]
+    
+  }
+  
+  if( length(unique(pat_list[[length(pat_list)]])) > pats_per_row ){
+    
+    row_list[[length(row_list)]] <- row_list[[length(row_list)]][
+      seq_len(length(row_list[[length(row_list)]]) - 1)
+    ]
+    row_list[[length(row_list) + 1]] <- c(i)
+    
+    pat_list[[length(pat_list)]] <- pat_list[[length(pat_list)]][
+      seq_len(length(pat_list[[length(pat_list)]]) - 1)
+    ]
+    pat_list[[length(pat_list) + 1]] <- pat_vec[[i]]
+    
+  }
+  
+  pat_spec_remaining <- ifelse(
+    i < length(pat_vec),
+    length(which(pat_vec[(i+1):length(pat_vec)] == pat_vec[i])),
+    0
+  )
+  
+  pats_in_row <- length(unique(pat_list[[length(pat_list)]]))
+  
+  max_slot_per_pat <- ifelse(
+    pats_in_row == pats_per_row,
+    1,
+    ifelse(
+      pats_in_row == 1, 
+      spec_per_row, 
+      floor(spec_per_row / pats_in_row) - 1
+    )
+  )
+  
+  pat_row_change <- pat_spec_remaining + 1 - max_slot_per_pat > 0 & 
+    pats_in_row > 1
+    
+  if( pat_row_change & length(row_list[[length(row_list)]]) > 1){
+    
+    row_list[[length(row_list)]] <- row_list[[length(row_list)]][
+      seq_len(length(row_list[[length(row_list)]]) - 1)
+    ]
+    row_list[[length(row_list) + 1]] <- c(i)
+    
+    pat_list[[length(pat_list)]] <- pat_list[[length(pat_list)]][
+      seq_len(length(pat_list[[length(pat_list)]]) - 1)
+    ]
+    pat_list[[length(pat_list) + 1]] <- pat_vec[[i]]
+    
+  }
+  
+}
 
 # Identify top gene ids and integration sites
 top_gene_ids_by_pat <- cond_sites %>%
@@ -363,74 +423,84 @@ if( length(args$support) > 0 ){
   
 }
 
-barplots <- unlist(lapply(
-    split(abund_summary, abund_summary$patient)[as.character(considered_pats)], 
-    function(df, idx){
+barplots <- mapply(
+  function(row_idx, pat_idx, df){
+  
+    spec_x_pat <- split(
+      levels(summary_tbl$specimen)[row_idx], 
+      levels(summary_tbl$patient)[pat_idx]
+    )
     
-      match_pat <- match(unique(df$patient), levels(summary_tbl$patient))
+    df <- df[names(spec_x_pat)]
+    
+    specimen_ids <- unlist(spec_x_pat)
+    names(specimen_ids) <- rep(names(spec_x_pat), lengths(spec_x_pat))
+    
+    lapply(
+      df, 
+      function(d, spec_ids, s_x_p){
       
-      names(idx) <- paste0(names(idx), ".")
-      
-      idx_match <- which(
-        as.numeric(stringr::str_extract(names(idx), "[0-9]+")) == match_pat
-      )
-      
-      specimens_considered <- unlist(idx[idx_match])
-      
-      names(specimens_considered) <- stringr::str_extract(
-        names(specimens_considered), 
-        "[0-9]+\\.[0-9]+"
-      )
-      
-      specimen_ids <- levels(summary_tbl$specimen)[specimens_considered]
-      names(specimen_ids) <- names(specimens_considered)
-      
-      df <- dplyr::mutate(
-        df, 
-        page.grp = names(specimen_ids)[match(specimen, specimen_ids)],
-        mod.gene.id = factor(mod.gene.id, levels = unique(mod.gene.id)),
-        mod.gene.id = forcats::fct_relevel(mod.gene.id, "LowAbund")
-      )
-      
-      uniq_gene_ids <- unique(as.character(df$mod.gene.id))
-      
-      color_scales <- structure(
-        df$color[match(uniq_gene_ids, df$mod.gene.id)], 
-        names = uniq_gene_ids
-      )
-      
-      if( length(args$support) > 0 ){
-        p <- ggplot(df, aes(x = condition, y = relAbund, fill = mod.gene.id))
-      }else{
-        p <- ggplot(df, aes(x = specimen, y = relAbund, fill = mod.gene.id))
-      }
-      
-      p <- p +
-        geom_bar(stat = "identity") + 
-        scale_fill_manual(values = color_scales) +
-        scale_x_discrete(position = "top") +
-        labs(y = NULL, fill = "Gene ID") +
-        custom_theme +
-        theme(
-          axis.title.x = element_blank(),
-          axis.text.x = element_text(angle = 30, hjust = 0, vjust = 0),
-          axis.ticks.x = element_blank(),
-          legend.key.height = unit(7.5, "mm"),
-          legend.position = "right",
-          strip.placement = "outside"
-        )
-      
-      lapply(seq_len(length(unique(df$page.grp))), function(i){
-        p + 
-          facet_wrap_paginate(
-            ~patient, nrow = 1, ncol = spec_per_row, scales = "free", page = i
+        d <- dplyr::mutate(
+            d, 
+            mod.gene.id = factor(mod.gene.id, levels = unique(mod.gene.id)),
+            mod.gene.id = forcats::fct_relevel(mod.gene.id, "LowAbund")
           )
-      })
+        
+        uniq_gene_ids <- unique(as.character(d$mod.gene.id))
+        
+        color_scales <- structure(
+            d$color[match(uniq_gene_ids, d$mod.gene.id)], 
+            names = uniq_gene_ids
+          )
+        
+        d <- dplyr::filter(d, specimen %in% spec_ids)
+        
+        if( length(args$support) > 0 ){
+          p <- ggplot(
+            d, 
+            aes(x = condition, y = relAbund, fill = mod.gene.id)
+          )
+        }else{
+          p <- ggplot(
+            d, 
+            aes(x = specimen, y = relAbund, fill = mod.gene.id)
+          )
+        }
+        
+        p <- p +
+          geom_bar(stat = "identity") + 
+          facet_wrap(~patient, nrow = 1, scales = "free") +
+          scale_fill_manual(values = color_scales) +
+          scale_x_discrete(position = "top") +
+          labs(y = NULL, fill = "Gene ID") +
+          custom_theme +
+          theme(
+            axis.title.x = element_blank(),
+            axis.text.x = element_text(angle = 30, hjust = 0, vjust = 0),
+            axis.ticks.x = element_blank(),
+            legend.key.height = unit(7.5, "mm"),
+            legend.position = "right",
+            legend.text = element_text(size = 7),
+            strip.placement = "outside"
+          )
+        
+        p
+        
+      },
+      spec_ids = specimen_ids,
+      s_x_p = spec_x_pat
+    )
     
-    },
-    idx = split_list
-  ), 
-  recursive = FALSE
+  },
+  row_idx = row_list,
+  pat_idx = pat_list,
+  MoreArgs = list(
+    df = split(
+      abund_summary, 
+      abund_summary$patient
+    )[as.character(considered_pats)]
+  ),
+  SIMPLIFY = FALSE
 )
 
 for(i in seq_along(row_list)){
@@ -444,9 +514,10 @@ for(i in seq_along(row_list)){
   }
   
   # 7" x 5"
-  plot_idx <- as.numeric(unique(row_list[[i]]))
+  plot_idx <- as.integer(factor(row_list[[i]]))
+  layout_mat <- as.integer(factor(pat_list[[i]]))
   grid.arrange(
-    grobs = barplots[plot_idx], nrow = 1, left = "Relative Abundance"
+    grobs = barplots[[i]][plot_idx], nrow = 1, left = "Relative Abundance"
   )
 
 }
@@ -469,7 +540,7 @@ if( args$format == "pdf" ){
 
 Integration frequency refers to the repeated observation of integration within the same region. Below in figure 2, transcription units were used as reference regions to determine the 10 most frequent regions per patient. This analysis pools clones identified across conditions. The x-axis denotes the number of unique integrations or clones identified associated with the transcription unit (name denoted to the left of the plot). The size of the point indicates how many different specimens clones were observed in and the color indicates the sum of each clones maximal abundance. Transcription unit or gene names included indicators previously mentioned.
 
-```{r gene_freq_plots, fig.height=5, fig.width=7}
+```{r gene_freq_plots, fig.height=4.5, fig.width=7}
 top_gene_cnt <- 10
 max_specs_per_pat <- dplyr::group_by(summary_tbl, patient) %>%
   dplyr::summarise(cnt = n()) %$%
@@ -530,7 +601,7 @@ gene_freq_plot <- ggplot(top_gene_summary, aes(x = cln_cnt, y = gene)) +
     legend.position = "bottom"
   )
 
-freq_fig_rows <- unique(ceiling(seq_len(length(considered_pats))/4))
+freq_fig_rows <- unique(ceiling(seq_len(length(considered_pats))/pats_per_row))
 
 for( i in freq_fig_rows ){
   
@@ -544,7 +615,7 @@ for( i in freq_fig_rows ){
   
   p <- gene_freq_plot +
     facet_wrap_paginate(
-      ~patient, ncol = 3, nrow = 1, scales = "free", page = i
+      ~patient, ncol = pats_per_row, nrow = 1, scales = "free", page = i
     )
   
   print(p)

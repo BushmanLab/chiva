@@ -31,6 +31,6 @@ if( file.exists(args[2]) ){
   stop(
     "\n  Could not write output file.", 
     "\n  Check input sequences in ", args[1], 
-    "\n  and make sure they are all in 'fasta' or 'fasta.gz' format."
+    "\n  and make sure they are all in 'fasta' or 'fasta.gz' format.\n"
   )
 }
