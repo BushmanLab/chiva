@@ -251,7 +251,7 @@ Clonal expansion can be assessed by quantifying the number of inferred cells sam
 # Parmeters
 top_gene_cnt <- 10
 pats_per_row <- 3
-spec_per_row <- 6
+spec_per_row <- 8
 
 considered_pats <- unique(summary_tbl$patient)
 considered_pats <- considered_pats[!grepl("UTC", considered_pats)]
@@ -261,7 +261,7 @@ low_abund_color <- "#E0E0E0"
 
 # Determine splitting vector
 # no more than 3 patients per row
-# no more than 6 specimens per row
+# no more than 8 specimens per row
 # no more than 2 rows per page
 
 n_pats <- length(considered_pats)
@@ -514,10 +514,13 @@ for(i in seq_along(row_list)){
   }
   
   # 7" x 5"
-  plot_idx <- as.integer(factor(row_list[[i]]))
+  #plot_idx <- as.integer(factor(row_list[[i]]))
   layout_mat <- as.integer(factor(pat_list[[i]]))
   grid.arrange(
-    grobs = barplots[[i]][plot_idx], nrow = 1, left = "Relative Abundance"
+    grobs = barplots[[i]], 
+    nrow = 1, 
+    layout_mat = layout_mat, 
+    left = "Relative Abundance"
   )
 
 }
