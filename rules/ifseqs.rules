@@ -26,7 +26,7 @@ rule neg_select_LTR_reads_R1:
     seqs=PROC_DIR + "/analysis_data/{sample}.R1.filt.fastq.gz",
     ids=PROC_DIR + "/analysis_data/{sample}.hg.reads.txt"
   output:
-    temp(PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.ns.if.fastq.gz")
+    PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.ns.if.fastq.gz"
   params: 
     tool=CODE_DIR + "/filt.R"
   log:
@@ -44,7 +44,7 @@ rule neg_select_LTR_reads_R2:
     seqs=PROC_DIR + "/analysis_data/{sample}.R2.filt.fastq.gz",
     ids=PROC_DIR + "/analysis_data/{sample}.hg.reads.txt"
   output:
-    temp(PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.ns.if.fastq.gz")
+    PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.ns.if.fastq.gz"
   params: 
     tool=CODE_DIR + "/filt.R"
   log:
@@ -57,6 +57,49 @@ rule neg_select_LTR_reads_R2:
       --negSelect --compress > {log} 2>&1
     """
 
+rule filter_IF_reads_against_refs:
+  input:
+    seqs=PROC_DIR + "/analysis_data/internalfrags/{sample}.{read}.if.consol.fasta",
+    refs=VIRAL_DIR + "/chiva." + RUN + ".viral.seqs.fasta"
+  output:
+    temp(PROC_DIR + "/analysis_data/internalfrags/{sample}.{read}.if.reffil.consol.fasta.gz")
+  params:
+    tool=CODE_DIR + "/filt.R",
+    alntype=config["ifAlignType"],
+    pctid=config["ifPctID"],
+    pctidtype=config["ifPctIDType"],
+    submatadj=config["ifSubMatAdj"],
+    gapopen=config["ifGapOpen"],
+    gapext=config["ifGapExt"],
+    minalnlen=config["ifMinAlignLength"]
+  log:
+    PROC_DIR + "/logs/{sample}.{read}.filt.ifref.log"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * config["filtMB"]
+  shell:
+    """
+    Rscript {params.tool} {input.seqs} -o {output} -r {input.refs} \
+        --aligntype {params.alntype} --pctID {params.pctid} \
+        --pctIDtype {params.pctidtype} --subMatAdj {params.submatadj} \
+        --gapOpen {params.gapopen} --gapExt {params.gapext} \
+        --minAlignLength {params.minalnlen} \
+        --compress > {log} 2>&1
+    """
+
+rule expand_ref_pos_IF_reads:
+  input:
+    R1=PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.if.reffil.consol.fasta.gz",
+    K1=PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.if.key.csv",
+    R2=PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.if.reffil.consol.fasta.gz",
+    K2=PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.if.key.csv"
+  output:
+    temp(PROC_DIR + "/analysis_data/internalfrags/{sample}.if.ids.txt")
+  params:
+    tool=CODE_DIR + "/expand_key_to_ids.R"
+  log:
+    PROC_DIR + "/logs/{sample}.if.expand.log"
+  shell:
+    "Rscript {params.tool} {input} {output} > {log} 2>&1"
 
 rule pos_select_LTR_reads_R1:
   input:

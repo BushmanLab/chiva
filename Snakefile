@@ -185,16 +185,16 @@ if not "reportMB" in config:
 
 # Target Rules
 rule all:
-    input: 
-        stdSites=PROC_DIR + "/output_data/standardized_uniq_sites.rds",
-        condSites=PROC_DIR + "/output_data/condensed_sites.csv",
-        xofilSites=PROC_DIR + "/output_data/xofil_condensed_sites.csv",
-        readMat=PROC_DIR + "/output_data/read_site_matrix.csv",
-        fragMat=PROC_DIR + "/output_data/fragment_site_matrix.csv",
-        sumTbl=PROC_DIR + "/output_data/summary_table.csv",
-        report=PROC_DIR + "/output_data/report." + RUN + "." + config["reportFormat"],
-        IFR1=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.internalfrags.fastq.gz", sample=SAMPLES),
-        IFR2=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.internalfrags.fastq.gz", sample=SAMPLES)
+  input: 
+    stdSites=PROC_DIR + "/output_data/standardized_uniq_sites.rds",
+    condSites=PROC_DIR + "/output_data/condensed_sites.csv",
+    xofilSites=PROC_DIR + "/output_data/xofil_condensed_sites.csv",
+    readMat=PROC_DIR + "/output_data/read_site_matrix.csv",
+    fragMat=PROC_DIR + "/output_data/fragment_site_matrix.csv",
+    sumTbl=PROC_DIR + "/output_data/summary_table.csv",
+    report=PROC_DIR + "/output_data/report." + RUN + "." + config["reportFormat"],
+    IFR1=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.internalfrags.fastq.gz", sample=SAMPLES),
+    IFR2=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.internalfrags.fastq.gz", sample=SAMPLES)
         
 
 # Processing Rules

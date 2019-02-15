@@ -1,7 +1,7 @@
-# This Rscript is meant solely to expand two Read alignments, in the form of a 
-# PSL table with no header given two key files for read names.
+# This Rscript is meant solely to expand ids from consolidated sequence files 
+# and write all identified ids to a output .txt file.
 # 
-# Usage: Rscript expand_key_to_ids.R {R1.psl} {K1.csv} {R2.psl} {K2.csv} {output.txt}
+# Usage: Rscript expand_key_to_ids.R {R1.fasta.gz} {K1.csv} {R2.fasta.gz} {K2.csv} {output.txt}
 # 
 
 options(stringsAsFactors = FALSE, scipen = 99, width = 999)
@@ -14,22 +14,18 @@ code_dir <- dirname(sub(
   x = grep("--file=", commandArgs(trailingOnly = FALSE), value = TRUE)
 ))
 
-source(file.path(code_dir, "supporting_scripts/readPSL.R"))
 source(file.path(code_dir, "supporting_scripts/readKeyFile.R"))
 
-R1psl <- readPSL(args[1])
+R1_names <- as.character(ShortRead::id(ShortRead::readFasta(args[1])))
 
-K1tbl <- readKeyFile(args[2], stringr::str_extract(args[2], "[\\w]+$"))
+K1_tbl <- readKeyFile(args[2], stringr::str_extract(args[2], "[\\w]+$"))
 
-R2psl <- readPSL(args[3])
+R2_names <- as.character(ShortRead::id(ShortRead::readFasta(args[3])))
 
-K2tbl <- readKeyFile(args[4], stringr::str_extract(args[4], "[\\w]+$"))
+K2_tbl <- readKeyFile(args[4], stringr::str_extract(args[4], "[\\w]+$"))
 
-R1_positive_keys <- unique(R1psl$qName)
-R2_positive_keys <- unique(R2psl$qName)
-
-K1_filtered <- K1tbl$readNames[K1tbl$seqID %in% R1_positive_keys]
-K2_filtered <- K2tbl$readNames[K2tbl$seqID %in% R2_positive_keys]
+K1_filtered <- K1_tbl$readNames[K1_tbl$seqID %in% R1_names]
+K2_filtered <- K2_tbl$readNames[K2_tbl$seqID %in% R2_names]
 
 key_readNames <- unique(c(K1_filtered, K2_filtered))
 

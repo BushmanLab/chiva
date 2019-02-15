@@ -70,11 +70,17 @@ minTempLength : 30
 maxTempLength : 2500
 
 # Internal fragment positive selection filtering
-viralBLATparams : "-tileSize=8 -stepSize=3 -minIdentity=70 -minScore=15 repMatch=112312 -dots=1000 -out=psl -noHead"
+ifAlignType : "lg"
+ifPctID : 75
+ifPctIDType : "local"
+ifSubMatAdj : "iAR"
+ifGapOpen : 2
+ifGapExt : 0
+ifMinAlignLength : 20
 
 # Post-processing
 refGenes : 
-    file : "genomes/hg38.refSeq.ext.rds"
+    file : "genomes/hg38.refSeq.ext.nomodel.rds"
     symbolCol : "name2"
 oncoGeneList : 
     file : "http://bushmanlab.org/assets/doc/allOnco_Feb2017.tsv"
