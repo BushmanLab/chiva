@@ -393,16 +393,16 @@ if( length(args$support) > 0 ){
       ),
       condition = factor(condition, levels = c(unique(condition), "Mock"))
     ) %>%
-    dplyr::select(specimen, patient, condition)
+    dplyr::distinct(specimen, patient, condition)
 
 }else{
   
   cond_overview <- sample_info %>%
     dplyr::mutate(
       condition = NA,
-      patient = rep(NA, n())
+      patient = rep("Mock", n())
     ) %>%
-    dplyr::select(specimen, patient, condition)
+    dplyr::distinct(specimen, patient, condition)
 
 }
 

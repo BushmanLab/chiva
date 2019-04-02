@@ -1,5 +1,6 @@
 # Initial analysis of patient sequencing by High Throughput Method.
-# commandline args : Rscript ....R inputfile output_Dir
+# commandline args : Rscript ....R inputfile output_dir install_dir
+options(stringsAsFactors = FALSE, scipen = 99)
 
 args <- commandArgs(trailingOnly = TRUE)
 
@@ -17,7 +18,7 @@ if(!all(packs_loaded)){
 }
 
 # Source additional functions (HARDCODED FOR NOW!!!)
-source("/home/nobles/dev/projects/HIVLAT/supporting_funcs.R")
+source(file.path(args[3], "tools/rscripts/supporting_funcs.R"))
 
 # Load unique sites data, by reads
 uniq_reads <- fread(args[1], sep = ",") %>%
@@ -43,12 +44,10 @@ uniq_reads <- fread(args[1], sep = ",") %>%
 
 ## All samples refined together
 uniq_sites <- refine_breakpoints(uniq_reads, counts = "counts")
-uniq_sites <- unique_granges(
-  uniq_sites, sum.counts = TRUE, counts.col = "counts")
+uniq_sites <- unique_granges(uniq_sites, sum.cols = "counts")
 
 uniq_sites <- standardize_sites(uniq_sites)
-uniq_sites <- unique_granges(
-  uniq_sites, sum.counts = TRUE, counts.col = "counts")
+uniq_sites <- unique_granges(uniq_sites, sum.cols = "counts")
 uniq_sites$posid <- generate_posid(uniq_sites)
 
 cond_sites <- condense_intsites(
@@ -56,13 +55,15 @@ cond_sites <- condense_intsites(
 
 xofil_uniq_sites <- filter_crossovers(uniq_sites, "samplename", "counts")
 xofil_cond_sites <- condense_intsites(
-  xofil_uniq_sites, grouping = "samplename", return.abundance = TRUE)
+  xofil_uniq_sites, grouping = "samplename", return.abundance = TRUE
+)
 
 summary_tbl <- as.data.frame(xofil_cond_sites) %>% 
   mutate(sample = str_extract(samplename, "[\\w]+")) %>% 
   group_by(sample) %>% 
   summarise(
-    reads = sum(counts), cells = sum(estAbund), sites = n_distinct(posid))
+    reads = sum(counts), cells = sum(estAbund), sites = n_distinct(posid)
+  )
 
 # Summarize
 saveRDS(

@@ -110,7 +110,8 @@ custom_theme <- theme_bw() +
     strip.text = element_text(face = "bold"),
     panel.grid = element_blank(),
     legend.key = element_rect(fill = "white"),
-    title = element_text(face = "bold"))
+    plot.title = element_text(face = "bold", size = 12)
+  )
 
 # Captions
 tbl_caps <- c(
@@ -118,8 +119,8 @@ tbl_caps <- c(
 )
 
 fig_caps <- c(
-  "Relative composition of each specimen. The most abundant clones are indicated by Gene IDs, while clones of lower abundance are binned together into the 'LowAbund' group. Specific integration locations are indicated below Gene IDs within the legends of the plots.",
-  "Frequency of observed integration within transcription units. The top 10 genes from each patient are displayed in the panels. The X-axis indicates the number of observed clones or integrations, while the size of the point indicates the number of specimens clones were observed. The color of the point indicates the cumulative maximum abundance for each clone associated with the transcription unit. Integrations may be near or within the transcription units to be counted."
+  "Relative composition of each specimen.",
+  "Frequency of observed integration within transcription units."
 )
 
 # Formatting
@@ -247,14 +248,16 @@ Clonal expansion can be assessed by quantifying the number of inferred cells sam
 * ~ indicates the gene is a cancer related gene
 * ! indicates the gene was associated with lymphoma in humans
 
+The most abundant clones are indicated by these Gene IDs, while clones of lower abundance are binned together into the 'LowAbund' group. Specific integration locations are indicated below Gene IDs within the legends of the plots.
+
 ```{r clonal_barplots, fig.height=4.5, fig.width=7}
 # Parmeters
 top_gene_cnt <- 10
 pats_per_row <- 3
-spec_per_row <- 8
+spec_per_row <- 10
 
 considered_pats <- unique(summary_tbl$patient)
-considered_pats <- considered_pats[!grepl("UTC", considered_pats)]
+considered_pats <- considered_pats[!grepl("UNC", considered_pats)]
 considered_pats <- considered_pats[!grepl("NTC", considered_pats)]
 
 low_abund_color <- "#E0E0E0"
@@ -454,6 +457,7 @@ barplots <- mapply(
           )
         
         d <- dplyr::filter(d, specimen %in% spec_ids)
+        pat_id <- unique(d$patient)
         
         if( length(args$support) > 0 ){
           p <- ggplot(
@@ -469,10 +473,13 @@ barplots <- mapply(
         
         p <- p +
           geom_bar(stat = "identity") + 
-          facet_wrap(~patient, nrow = 1, scales = "free") +
+          #facet_wrap(
+          #  ~ patient, nrow = 1, scales = "free", 
+          #  labeller = label_wrap_gen(width = 10)
+          #) +
           scale_fill_manual(values = color_scales) +
           scale_x_discrete(position = "top") +
-          labs(y = NULL, fill = "Gene ID") +
+          labs(y = NULL, fill = "Gene ID", title = pat_id) +
           custom_theme +
           theme(
             axis.title.x = element_blank(),
@@ -541,7 +548,7 @@ if( args$format == "pdf" ){
 
 # Frequency analysis
 
-Integration frequency refers to the repeated observation of integration within the same region. Below in figure 2, transcription units were used as reference regions to determine the 10 most frequent regions per patient. This analysis pools clones identified across conditions. The x-axis denotes the number of unique integrations or clones identified associated with the transcription unit (name denoted to the left of the plot). The size of the point indicates how many different specimens clones were observed in and the color indicates the sum of each clones maximal abundance. Transcription unit or gene names included indicators previously mentioned.
+Integration frequency refers to the repeated observation of integration within the same region. Below in figure 2, transcription units were used as reference regions to determine the 10 most frequent regions per patient. Integrations may be near or within the transcription units to be counted. This analysis pools clones identified across conditions. The x-axis denotes the number of unique integrations or clones identified associated with the transcription unit (name denoted to the left of the plot). The size of the point indicates how many different specimens clones were observed in and the color indicates the sum of each clones maximal abundance. Transcription unit or gene name indicators are included as previously mentioned.
 
 ```{r gene_freq_plots, fig.height=4.5, fig.width=7}
 top_gene_cnt <- 10
@@ -554,7 +561,7 @@ considered_pats <- considered_pats[!grepl("UTC", considered_pats)]
 considered_pats <- considered_pats[!grepl("NTC", considered_pats)]
 
 top_gene_summary <- cond_sites %>%
-  dplyr::mutate(gene = stringr::str_extract(gene.id, "[\\w]+")) %>%
+  dplyr::mutate(gene = stringr::str_extract(gene.id, "[\\w\\_\\-]+")) %>%
   dplyr::group_by(patient, gene, univ.id) %>%
   dplyr::summarise(
     max_abund = max(estAbund),
@@ -591,7 +598,9 @@ gene_freq_plot <- ggplot(top_gene_summary, aes(x = cln_cnt, y = gene)) +
   geom_point(aes(size = spec_cnt, color = cum_abund)) +
   scale_color_continuous(low = "#56B1F7", high = "#132B43") +
   scale_size_continuous(breaks = seq_len(max_specs_per_pat)) +
-  scale_x_continuous(breaks = pretty_breaks()) +
+  scale_x_continuous(breaks = function(x){
+    unique(floor(pretty(seq(0, (max(x) + 1) * 1.1))))
+  }) +
   guides(alpha = FALSE) +
   labs(
     x = "Observed Clones",
@@ -641,7 +650,19 @@ if( args$format == "pdf" ){
 
 # Tables of integration sites
 
-For each specimen, the most represented 45 clones are presented in separate tables. A complete list of clones is available in an associated *.csv file.
+```{r}
+
+report_file_name <- stringr::str_extract(
+  output_file, "[\\w\\_\\-]+.[\\w\\_\\-]+"
+)
+
+report_file_name <- paste0(
+  stringr::str_extract(report_file_name, "[\\w\\_\\-]+$"), ".sites.csv"
+)
+
+```
+
+For each specimen, the all clones are presented in separate tables. A single list of clones is available in an associated `r report_file_name` file.
 
 ```{r intsite_tables, results="asis"}
 
@@ -666,10 +687,7 @@ intsite_tbl %>%
     exon.name.col = "exon.names"
   ) %>%
   write.csv(
-    file = file.path(
-      output_dir, 
-      paste0(stringr::str_extract(output_file, "[\\w\\_\\-]+"), ".sites.csv")
-    ), 
+    file = file.path(output_dir, report_file_name), 
     quote = TRUE, 
     row.names = FALSE
   )
@@ -704,7 +722,6 @@ intsite_tbls_print <- lapply(
         "Patient" = patient, "Condition" = condition, "Position" = univ.id, 
         "GeneID" = gene.id, "Detected" = detect, "Abund." = estAbund, 
         "Reads" = reads) %>%
-      head(n = 50) %>%
       pandoc.table.return(
         style = "simple", 
         digits = 3, 

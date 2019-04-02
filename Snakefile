@@ -192,9 +192,9 @@ rule all:
     readMat=PROC_DIR + "/output_data/read_site_matrix.csv",
     fragMat=PROC_DIR + "/output_data/fragment_site_matrix.csv",
     sumTbl=PROC_DIR + "/output_data/summary_table.csv",
-    report=PROC_DIR + "/output_data/report." + RUN + "." + config["reportFormat"],
-    IFR1=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.internalfrags.fastq.gz", sample=SAMPLES),
-    IFR2=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.internalfrags.fastq.gz", sample=SAMPLES)
+#    IFR1=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.internalfrags.fastq.gz", sample=SAMPLES),
+#    IFR2=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.internalfrags.fastq.gz", sample=SAMPLES),
+    report=PROC_DIR + "/output_data/report." + RUN + "." + config["reportFormat"]
         
 
 # Processing Rules

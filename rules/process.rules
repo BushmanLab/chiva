@@ -50,13 +50,14 @@ rule initial_assessment:
     sumTbl=PROC_DIR + "/output_data/summary_table.csv"
   params:
     tool=CODE_DIR + "/initial_assessment.R",
-    proc=PROC_DIR + "/output_data"
+    proc=PROC_DIR + "/output_data",
+    inst=ROOT_DIR
   log:
     PROC_DIR + "/logs/" + RUN + ".init.assessment.log"
   resources:
     mem_mb=lambda wildcards, attempt: attempt * config["processMB"]
   shell:
-    "Rscript {params.tool} {input} {params.proc} > {log} 2>&1"
+    "Rscript {params.tool} {input} {params.proc} {params.inst} > {log} 2>&1"
     
 def report_supp(wildcards):
   supp_str = str()

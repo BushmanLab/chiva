@@ -47,7 +47,7 @@ barcode1 : "R1"
 barcode2 : "I1"
 bc1Mismatch : 3
 bc2Mismatch : 1
-#demultiCores : 4
+maxNcount : 1
 
 # Sequence trimming
 ## R1 sequence

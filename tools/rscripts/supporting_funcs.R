@@ -362,6 +362,7 @@ filter_crossovers <- function(sites, sample_col = NULL, counts_col = NULL,
   # per integration site.
   crossover_sites <- split(crossover_sites, generate_posid(crossover_sites))
   filtered_frags <- do.call(rbind, lapply(crossover_sites, function(x){
+    
     sams <- mcols(x)[,sample_col]
     reads <- mcols(x)[,counts_col]
     bp <- ifelse(strand(x) == "+", end(x), start(x))
@@ -374,31 +375,40 @@ filter_crossovers <- function(sites, sample_col = NULL, counts_col = NULL,
     # With the isolated fragment that are crossing over, determine if their 
     # associated read count ratios are above the cutoff_ratio value.
     fil_frags <- data.frame(
-        ori_sample = mcols(co_frags)[,sample_col],
-        pos_id = generate_posid(co_frags),
+        ori_sample = as.character(mcols(co_frags)[,sample_col]),
+        pos_id = as.character(generate_posid(co_frags)),
         bp = ifelse(
           strand(co_frags) == "+", end(co_frags), start(co_frags)),
-        counts = mcols(co_frags)[,counts_col]) %>%
+        counts = mcols(co_frags)[,counts_col],
+        stringsAsFactors = FALSE
+      ) %>%
       group_by(pos_id, bp) %>%
       mutate(
         adj_sample = ifelse(
           max(counts)/counts >= cutoff_ratio,
           ori_sample[which(counts == max(counts))],
-          ori_sample)) %>%
+          ori_sample)
+      ) %>%
       filter(ori_sample != adj_sample)
+    
     return(fil_frags)
+    
   }))
   
   # Transfer the reassignment data back into the dataset using the pos_id, bp,
   # and ori_sample data to identify the fragments. Then set their sample_col 
   # data to the adj_sample.
-  adj_index <- sapply(1:nrow(filtered_frags), function(i){
+  adj_index <- sapply(seq_len(nrow(filtered_frags)), function(i){
+    
     which(
       generate_posid(sites) == filtered_frags$pos_id[i] &
         ifelse(
           strand(sites) == "+", end(sites), 
           start(sites)) == filtered_frags$bp[i] &
-        sampleNames == filtered_frags$ori_sample[i])})
+        sampleNames == filtered_frags$ori_sample[i])
+    
+  })
+  
   adj_sites <- sites
   mdata <- mcols(adj_sites)
   mdata[adj_index, sample_col] <- filtered_frags$adj_sample
@@ -407,7 +417,9 @@ filter_crossovers <- function(sites, sample_col = NULL, counts_col = NULL,
   # Message reassignments and produce output.
   filtered_frags <- split(
     filtered_frags, 
-    paste0(filtered_frags$ori_sample, ":", filtered_frags$adj_sample))
+    paste0(filtered_frags$ori_sample, ":", filtered_frags$adj_sample)
+  )
+  
   if(!quiet){
     null <- sapply(filtered_frags, function(df){
       message(
@@ -417,9 +429,10 @@ filter_crossovers <- function(sites, sample_col = NULL, counts_col = NULL,
     })
   }
   
-  adj_sites <- unique_granges(
-    adj_sites, sum.counts = TRUE, counts.col = counts_col)
+  adj_sites <- unique_granges(adj_sites, sum.cols = counts_col)
+  
   return(adj_sites)
+  
 }
 
 #' Generate a universal position ID for vectors / viruses sequence from both

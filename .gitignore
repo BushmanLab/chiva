@@ -46,3 +46,6 @@ configs/*.yml
 
 # Compressed genome files
 *.2bit
+
+# Viral sequence composite files
+*.viral.seqs.fasta
