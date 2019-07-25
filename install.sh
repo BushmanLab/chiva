@@ -196,7 +196,7 @@ function install_environment () {
         local install_options="--quiet --file etc/requirements.yml"
         debug_capture conda env update --name=$__chiva_env ${install_options} 2>&1
     else
-        local install_options="--quiet --yes --file etc/build.v0.1.0.txt"
+        local install_options="--quiet --yes --file etc/build.v0.1.1.txt"
         debug_capture conda create --name=$__chiva_env ${install_options} 2>&1
     fi
 
@@ -279,7 +279,7 @@ else
     if [[ $__reqs_install = "true" ]]; then
         __build_source="etc/requirements.yml"
     else
-        __build_source="etc/build.v0.1.0.txt"
+        __build_source="etc/build.v0.1.1.txt"
     fi
 
     info "Creating cHIVa environment..."
