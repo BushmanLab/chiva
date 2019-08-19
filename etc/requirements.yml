@@ -7,28 +7,35 @@ channels:
 dependencies:
   - snakemake
   - blat
+  - bwa
+  - samtools
   - graphviz
-  - pandoc < 2.0
+  - pandoc
   - semantic_version
   - ruamel.yaml
-  - r=3.4.1
+  - r=3.5.1
   - r-base
   - r-argparse
   - r-pander
+  - r-kableextra
   - r-yaml
   - r-tidyverse
   - r-magrittr
+  - r-ggforce
   - r-data.table
   - r-matrix
   - r-igraph
-  - r-rmarkdown < 1.9
-  - r-knitr < 1.18
+  - r-rmarkdown
+  - r-knitr
   - r-scales
   - r-rcolorbrewer
-  - r-devtools
-  - r-ggforce
   - r-gridextra
   - r-digest
+  - r-vegan
+  - r-statmod
+  - r-devtools
+  - r-testthat
+  - r-roxygen2
   - bioconductor-biocgenerics
   - bioconductor-iranges
   - bioconductor-genomicranges
