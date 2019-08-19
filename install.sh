@@ -68,6 +68,7 @@ __chiva_env="${arg_e:-chiva}"
 __run_chiva_tests=false
 __reqs_install=false
 __update_lib=false
+__update_pkg=false
 __update_env=false
 __req_r_version="3.4.1"
 __old_path=$PATH
@@ -155,7 +156,7 @@ function __unittest_gintools () {
 function __test_gintools () {
     if [[ $(__test_env) = true ]]; then
         activate_chiva
-        $(Rscript ${__chiva_dir}/tools/rscripts/check_pkgs.R iguideSupport \
+        $(Rscript ${__chiva_dir}/tools/rscripts/check_pkgs.R gintools \
             &> /dev/null) && echo true || echo false
         deactivate_chiva
     else
