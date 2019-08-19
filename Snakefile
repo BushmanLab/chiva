@@ -26,6 +26,7 @@ wildcard_constraints:
     sample="[^/]+"
 
 ## Sample information
+print("Attempting to read sample_info file: {}".format(config["Sample_Info"]))
 sampleInfo = import_sample_info(
     config["Sample_Info"], config["Sample_Name_Column"], delim)
 
@@ -68,7 +69,11 @@ if not Path(ROOT_DIR).exists():
         "and make sure you've activated the 'chiva' conda environment."
     )
 
+print("Using ROOT_DIR: {}".format(ROOT_DIR))
+
 RUN = config["Run_Name"]
+
+print("Analyzing RUN: {}".format(RUN))
 
 CODE_DIR = Path(ROOT_DIR) / "tools/rscripts"
 if not CODE_DIR.exists():
@@ -78,14 +83,18 @@ if not CODE_DIR.exists():
         "Additionally, make sure your install of cHIVa is up-to-date."
     )
 
+print("Using CODE_DIR: {}".format(CODE_DIR))
+
 if "Processing_Path" in config:
     PROC_DIR = Path(config["Processing_Path"]) / RUN
+    print("Trying PROC_DIR: {}".format(PROC_DIR))
     if not PROC_DIR.exists():
         abs_PROC_DIR = Path(ROOT_DIR) / str(PROC_DIR)
+        print("Trying PROC_DIR: {}".format(abs_PROC_DIR))
         if not abs_PROC_DIR.exists():
             raise SystemExit(
-                "Cannot locate processing directory: {}"
-            ).format(config["Processing_Path"])
+                "Cannot locate processing directory: {}".format(abs_PROC_DIR)
+            )
         else:
             PROC_DIR = abs_PROC_DIR
 else:
@@ -106,8 +115,8 @@ if "Viral_Genomes" in config:
         abs_VIRAL_DIR = Path(ROOT_DIR) / str(VIRAL_DIR)
         if not abs_VIRAL_DIR.exists():
             raise SystemExit(
-                "Cannot locate viral genome directory: {}"
-            ).format(configs["Viral_Genomes"])
+                "Cannot locate viral genome directory: {}".format(configs["Viral_Genomes"])
+            )
         else:
             VIRAL_DIR = abs_VIRAL_DIR
 else:

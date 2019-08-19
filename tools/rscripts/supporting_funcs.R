@@ -351,9 +351,14 @@ filter_crossovers <- function(sites, sample_col = NULL, counts_col = NULL,
   assign_matrix <- table(data.frame(
       sampleNames = Rle(values = sampleNames, lengths = read_counts),
       pos_id = Rle(values = generate_posid(sites), lengths = read_counts)))
+
   crossover_pos_id <- colnames(assign_matrix)[
-    which(colSums(assign_matrix > 0) > 1)]
-  
+    which(colSums(assign_matrix > 0) > 0)]
+  if(nrow(assign_matrix) > 1) {
+    crossover_pos_id <- colnames(assign_matrix)[
+      which(colSums(assign_matrix > 0) > 1)]
+  }
+  # If one sample, then just take all sites
   crossover_sites <- sites[generate_posid(sites) %in% crossover_pos_id]
   
   # For reads to be reassigned, they need to share the same site and breakpoint
@@ -361,17 +366,21 @@ filter_crossovers <- function(sites, sample_col = NULL, counts_col = NULL,
   # site. This could likely be done in one large matrix, but here is separated
   # per integration site.
   crossover_sites <- split(crossover_sites, generate_posid(crossover_sites))
+
   filtered_frags <- do.call(rbind, lapply(crossover_sites, function(x){
-    
+
     sams <- mcols(x)[,sample_col]
     reads <- mcols(x)[,counts_col]
     bp <- ifelse(strand(x) == "+", end(x), start(x))
     mat <- table(data.frame(
       samples = Rle(values = sams, lengths = reads),
       bp = Rle(values = bp, lengths = reads)))
-    co_bp <- colnames(mat)[which(colSums(mat > 0) > 1)]
+    co_bp <- colnames(mat)[which(colSums(mat > 0) > 0)]
+    if(nrow(mat)>1) {
+      co_bp <- colnames(mat)[which(colSums(mat > 0) > 0)]
+    }
     co_frags <- x[bp %in% co_bp]
-    
+
     # With the isolated fragment that are crossing over, determine if their 
     # associated read count ratios are above the cutoff_ratio value.
     fil_frags <- data.frame(
@@ -388,13 +397,15 @@ filter_crossovers <- function(sites, sample_col = NULL, counts_col = NULL,
           max(counts)/counts >= cutoff_ratio,
           ori_sample[which(counts == max(counts))],
           ori_sample)
-      ) %>%
-      filter(ori_sample != adj_sample)
-    
+      )
+    if(nrow(mat)>1) {
+      fil_frags <- fil_frags %>% filter(ori_sample != adj_sample)
+    }
+
     return(fil_frags)
     
   }))
-  
+
   # Transfer the reassignment data back into the dataset using the pos_id, bp,
   # and ori_sample data to identify the fragments. Then set their sample_col 
   # data to the adj_sample.
@@ -408,8 +419,9 @@ filter_crossovers <- function(sites, sample_col = NULL, counts_col = NULL,
         sampleNames == filtered_frags$ori_sample[i])
     
   })
-  
+
   adj_sites <- sites
+  
   mdata <- mcols(adj_sites)
   mdata[adj_index, sample_col] <- filtered_frags$adj_sample
   mcols(adj_sites) <- mdata
@@ -429,7 +441,7 @@ filter_crossovers <- function(sites, sample_col = NULL, counts_col = NULL,
     })
   }
   
-  adj_sites <- unique_granges(adj_sites, sum.cols = counts_col)
+  adj_sites <- unique_granges(adj_sites, counts.col = counts_col)
   
   return(adj_sites)
   

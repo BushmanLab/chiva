@@ -49,3 +49,4 @@ configs/*.yml
 
 # Viral sequence composite files
 *.viral.seqs.fasta
+.Rproj.user

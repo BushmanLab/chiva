@@ -15,14 +15,15 @@ readPSL <- function(psl.file, to.null = NULL) {
   cols_class <- c(
     rep("numeric",8), rep("character",2), rep("numeric",3), "character", 
     rep("numeric",4), rep("character",3))
-  
+
   psl <- suppressMessages(
     lapply(psl.file, function(f){
       message("Reading ",f)
       try(data.table::fread(paste("zcat", f), sep = "\t"), silent = TRUE)
     })
   )
-  
+  print(psl.file)
+  print(str(psl))
   psl <- lapply(psl, function(p){
     
     if( any(class(p) == "try-error") ){
@@ -41,6 +42,7 @@ readPSL <- function(psl.file, to.null = NULL) {
   })
   
   psl <- data.table::rbindlist(psl)
+  print(str(psl))
   colnames(psl) <- cols
   
   if(length(to.null)>0) psl[, to.null] <- NULL

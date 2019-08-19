@@ -3,7 +3,7 @@
 
 rule demultiplex:
   input:
-    configFile=ancient("configs/" + RUN + ".config.yml"),
+    configFile=PROC_DIR + "/" + RUN + ".config.yml",
     sampleInfo=ancient(config["Sample_Info"]),
     R1=R1_SEQ_INPUT,
     R2=R2_SEQ_INPUT,

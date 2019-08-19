@@ -31,7 +31,7 @@ rule compress_align:
   shell: "gzip {input}"
 
 rule generate_2bit:
-  input: "configs/" + RUN + ".config.yml"
+  input: PROC_DIR + "/" + RUN + ".config.yml"
   output: temp(config["Ref_Genome_Path"])
   params: config["Ref_Genome"]
   shell:
