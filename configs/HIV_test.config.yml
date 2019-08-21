@@ -1,6 +1,6 @@
 # Run configuration
 Run_Name : "HIV_test"
-Sample_Info : "etc/tests/test.hiv.csv"
+Sample_Info : "etc/tests/test.hiv.csv" # Must be absolute path OR relative to chiva installation directory
 Supplemental_Info : ""
 Processing_Path : "etc/tests"
 Ref_Genome : "hg38"

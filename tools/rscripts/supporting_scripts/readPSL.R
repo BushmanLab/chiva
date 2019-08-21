@@ -22,13 +22,15 @@ readPSL <- function(psl.file, to.null = NULL) {
       try(data.table::fread(paste("zcat", f), sep = "\t"), silent = TRUE)
     })
   )
-  print(psl.file)
-  print(str(psl))
+
   psl <- lapply(psl, function(p){
     
-    if( any(class(p) == "try-error") ){
+    if( any(class(p) == "try-error" | nrow(p) == 0) ){
 
-      if(grepl("File is empty:", p[1])){
+      if(nrow(p) == 0) {
+        p <- read.table(text = "", col.names = cols, colClasses = cols_class)
+        return(data.table::as.data.table(p))
+      } else if(grepl("File is empty:", p[1])){
         p <- read.table(text = "", col.names = cols, colClasses = cols_class)
         return(data.table::as.data.table(p))
       }else{
@@ -42,10 +44,15 @@ readPSL <- function(psl.file, to.null = NULL) {
   })
   
   psl <- data.table::rbindlist(psl)
-  print(str(psl))
   colnames(psl) <- cols
   
   if(length(to.null)>0) psl[, to.null] <- NULL
   
   return(as.data.frame(psl))
 }
+
+
+
+
+
+

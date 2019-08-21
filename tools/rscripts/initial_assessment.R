@@ -3,6 +3,9 @@
 options(stringsAsFactors = FALSE, scipen = 99)
 
 args <- commandArgs(trailingOnly = TRUE)
+uniqueSitesFile <- args[1]
+projectDir <- args[2]
+chivaDir <- args[3]
 
 packs <- c("stringr", "GenomicRanges", "igraph", "gintools", "dplyr", 
            "magrittr", "data.table", "Matrix", "BSgenome", "Biostrings",
@@ -18,10 +21,10 @@ if(!all(packs_loaded)){
 }
 
 # Source additional functions (HARDCODED FOR NOW!!!)
-source(file.path(args[3], "tools/rscripts/supporting_funcs.R"))
+source(file.path(chivaDir, "tools/rscripts/supporting_funcs.R"))
 
 # Load unique sites data, by reads
-uniq_reads <- fread(args[1], sep = ",") %>%
+uniq_reads <- fread(uniqueSitesFile, sep = ",") %>%
   as.data.frame() %>%
   mutate(
     chr = seqnames, 
@@ -68,16 +71,16 @@ summary_tbl <- as.data.frame(xofil_cond_sites) %>%
 # Summarize
 saveRDS(
   list("unfil_uniq_sites" = uniq_sites, "fil_uniq_sites" = xofil_uniq_sites),
-  file.path(args[2], "standardized_uniq_sites.rds"))
+  file.path(projectDir, "standardized_uniq_sites.rds"))
 
 write.csv(
   as.data.frame(cond_sites),
-  file.path(args[2], "condensed_sites.csv"),
+  file.path(projectDir, "condensed_sites.csv"),
   quote = FALSE, row.names = FALSE)
 
 write.csv(
   as.data.frame(xofil_cond_sites),
-  file.path(args[2], "xofil_condensed_sites.csv"),
+  file.path(projectDir, "xofil_condensed_sites.csv"),
   quote = FALSE, row.names = FALSE)
 
 read_site_matrix <- as.data.frame(uniq_sites) %>% 
@@ -89,7 +92,7 @@ read_site_matrix <- as.data.frame(uniq_sites) %>%
 
 write.csv(
   read_site_matrix, 
-  file.path(args[2], "read_site_matrix.csv"), 
+  file.path(projectDir, "read_site_matrix.csv"), 
   quote = FALSE, row.names = TRUE)
 
 frag_site_matrix <- as.data.frame(cond_sites) %>% 
@@ -101,12 +104,12 @@ frag_site_matrix <- as.data.frame(cond_sites) %>%
 
 write.csv(
   frag_site_matrix, 
-  file.path(args[2], "/fragment_site_matrix.csv"), 
+  file.path(projectDir, "/fragment_site_matrix.csv"), 
   quote = FALSE, row.names = TRUE)
 
 write.csv(
   summary_tbl,
-  file.path(args[2], "/summary_table.csv"),
+  file.path(projectDir, "/summary_table.csv"),
   quote = FALSE, row.names = FALSE)
 
 q()
