@@ -6,7 +6,7 @@ read -r -d '' __usage <<-'EOF'
   -e --environment  [arg] Environment to install to. Default: "chiva"
   -s --chiva_dir    [arg] Location of chiva source code. Default: this directory
   -c --conda  [arg]       Location of Conda installation. Default: ${PREFIX}
-  -u --update [arg]       Update chiva [lib]rary, conda [env], or [all].
+  -u --update [arg]       Update chiva [lib]rary, package [pkg], conda [env], or [all].
   -r --requirements       Install from requirements (hours) rather than build (minutes).
   -t --test               After installation, run test to check functionality.
   -v --verbose            Show subcommand output
@@ -68,12 +68,11 @@ __chiva_env="${arg_e:-chiva}"
 __run_chiva_tests=false
 __reqs_install=false
 __update_lib=false
+__update_pkg=false
 __update_env=false
 __req_r_version="3.4.1"
 __old_path=$PATH
 __output=${2-/dev/stdout}
-
-#PATH=$PATH:${__conda_path}/bin
 
 if [[ "${arg_t:?}" = "1" ]]; then
     __run_chiva_tests=true
@@ -86,15 +85,20 @@ fi
 if [[ "${arg_u}" = "all" || "${arg_u}" = "env" ]]; then
     __update_lib=true
     __update_env=true
+    __update_pkg=true
 elif [[ "${arg_u}" = "lib" ]]; then
     __update_lib=true
+    __update_pkg=false
+elif [[ "${arg_u}" = "pkg" ]]; then
+    __update_lib=false
+    __update_pkg=true
 fi
 
-function __test_conda() {
+function __test_conda () {
     command -v conda &> /dev/null && echo true || echo false
 }
 
-function __detect_conda_install() {
+function __detect_conda_install () {
     local discovered=$(__test_conda)
 
     if [[ $discovered = true ]]; then
@@ -104,7 +108,7 @@ function __detect_conda_install() {
     fi
 }
 
-function __test_env() {
+function __test_env () {
     if [[ $(__test_conda) = true ]]; then
         $(conda env list \
         | cut -f1 -d' ' \
@@ -133,12 +137,34 @@ function __test_r_packages () {
     activate_chiva
 
     $(Rscript ${__chiva_dir}/etc/check_for_required_packages.R \
-        > /dev/null) && echo true || echo false
+        &> /dev/null) && echo true || echo false
 
     deactivate_chiva
 }
 
-function __test_chivalib() {
+function __unittest_gintools () {
+    if [[ $(__test_env) = true ]]; then
+        activate_chiva
+        $(Rscript ${__chiva_dir}/tools/rscripts/check_gintools.R \
+            &> /dev/null) && echo true || echo false
+        deactivate_chiva
+    else
+        echo false
+    fi
+}
+
+function __test_gintools () {
+    if [[ $(__test_env) = true ]]; then
+        activate_chiva
+        $(Rscript ${__chiva_dir}/tools/rscripts/check_pkgs.R gintools \
+            &> /dev/null) && echo true || echo false
+        deactivate_chiva
+    else
+        echo false
+    fi
+}
+
+function __test_chivalib () {
     if [[ $(__test_env) = true ]]; then
       	activate_chiva
       	command -v chiva &> /dev/null && echo true || echo false
@@ -196,7 +222,7 @@ function install_environment () {
         local install_options="--quiet --file etc/requirements.yml"
         debug_capture conda env update --name=$__chiva_env ${install_options} 2>&1
     else
-        local install_options="--quiet --yes --file etc/build.v0.1.1.txt"
+        local install_options="--quiet --yes --file etc/build.b0.2.0.txt"
         debug_capture conda create --name=$__chiva_env ${install_options} 2>&1
     fi
 
@@ -211,6 +237,22 @@ function install_environment () {
     if [[ $(__test_r_packages) != true ]]; then
         installation_error "R-package installation"
     fi
+}
+
+function install_gintools () {
+    activate_chiva
+    
+    if [[ $(__unittest_gintools) != true ]]; then
+        installation_error "GinTools R-package unit tests"
+    else
+        debug_capture R CMD INSTALL tools/gintools &> /dev/null
+    fi
+    
+    if [[ $(__test_gintools) != true ]]; then
+      	installation_error "GinTools R-package installation"
+    fi
+    
+    deactivate_chiva
 }
 
 function install_env_vars () {
@@ -247,10 +289,22 @@ info "    cHIVa env :  '${__chiva_env}'"
 debug "Components detected:"
 __conda_installed=$(__test_conda)
 debug "    Conda:         ${__conda_installed}"
-__env_exists=$(__test_env)
-debug "    Environment:   ${__env_exists}"
-__chivalib_installed=$(__test_chivalib)
-debug "    Library:       ${__chivalib_installed}"
+
+if [[ $__conda_installed = false ]]; then
+    PATH=$PATH:${__conda_path}/bin
+    __env_exists=$(echo false)
+    __gintoolspkg_installed=$(echo false)
+    __chivalib_installed=$(echo false)
+elif [[ $__conda_installed = true ]]; then
+    # Source conda into shell
+    source ${__conda_path}/etc/profile.d/conda.sh
+    __env_exists=$(__test_env)
+    debug "    Environment:   ${__env_exists}"
+    __gintoolspkg_installed=$(__test_gintools)
+    debug "    R-package:     ${__gintoolspkg_installed}"
+    __chivalib_installed=$(__test_chivalib)
+    debug "    Library:       ${__chivalib_installed}"
+fi
 
 __env_changed=false
 
@@ -279,7 +333,7 @@ else
     if [[ $__reqs_install = "true" ]]; then
         __build_source="etc/requirements.yml"
     else
-        __build_source="etc/build.v0.1.1.txt"
+        __build_source="etc/build.b0.2.0.txt"
     fi
 
     info "Creating cHIVa environment..."
@@ -287,6 +341,21 @@ else
     install_environment
     __env_changed=true
     info "$__chiva_env environment created."
+fi
+
+
+# Install iguideSupport into environment if changed or requested
+if [[ $__env_changed = true ]]; then
+    info "Environment installed/updated; (re)installing GinTools R-package..."
+    install_gintools
+elif [[ $__gintoolspkg_installed = false ]]; then
+    info "Installing GinTools R-package..."
+    install_gintools
+elif [[ $__update_pkg = true ]]; then
+    info "Updating GinTools R-package..."
+    install_gintools
+else
+    info "GinTools R-package already installed (use '--update pkg' to update)"
 fi
 
 
