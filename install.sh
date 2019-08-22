@@ -390,7 +390,7 @@ if [[ $__run_chiva_tests = true ]]; then
     else
         warning "    cHIVa Tests:  FAILED"
         warning "    Try running the test outside of the install to confirm."
-        warning "    Just run 'bash tests/test.sh $__chiva_env'."
+        warning "    Just run 'bash etc/tests/test.sh $__chiva_env'."
     fi
 fi
 
