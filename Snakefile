@@ -9,9 +9,17 @@ import yaml
 import configparser
 from pathlib import Path
 from chivalib import import_sample_info, choose_sequence_data
+sys.path.append('/home/kevin/anaconda3/envs/qiime1/lib/python2.7/site-packages/')
+sys.path.append('/home/kevin/dev/sunbeam')
+import sbx_igv
+#from snakemake.utils import R
+#from subprocess import DEVNULL, STDOUT, check_call
 
 if not config:
     raise SystemExit("No config file specified.")
+
+#for key, value in config.items() :
+#    print(key, value)
 
 # Import sampleInfo
 if ".csv" in config["Sample_Info"]:
@@ -115,7 +123,7 @@ if "Viral_Genomes" in config:
         abs_VIRAL_DIR = Path(ROOT_DIR) / str(VIRAL_DIR)
         if not abs_VIRAL_DIR.exists():
             raise SystemExit(
-                "Cannot locate viral genome directory: {}".format(configs["Viral_Genomes"])
+                "Cannot locate viral genome directory: {}".format(config["Viral_Genomes"])
             )
         else:
             VIRAL_DIR = abs_VIRAL_DIR
@@ -132,13 +140,29 @@ if not VIRAL_DIR.exists():
             config["Run_Name"], ROOT_DIR
         )
     )
-    
-    
+
+if "IGV_Genome" in config:
+    IGV_GENOME = Path(config["IGV_Genome"])
+    if not IGV_GENOME.exists():
+        abs_IGV_GENOME = Path(os.path.join(ROOT_DIR, IGV_GENOME))
+        if not abs_IGV_GENOME.exists():
+            raise SystemExit(
+                "Cannot locate viral genome (for IGV & Bowtie) directory: {} (tried {})".format(config["IGV_Genome"], abs_IGV_GENOME)
+            )
+        else:
+            IGV_GENOME = abs_IGV_GENOME
+else:
+    IGV_GENOME = Path(ROOT_DIR) / "genomes/viral_genomes/HIV_HXB2.fasta"
+
+print("Using IGV_Genome: {}".format(IGV_GENOME))
+
 # Change to strings
 ROOT_DIR = str(ROOT_DIR)
 CODE_DIR = str(CODE_DIR)
 PROC_DIR = str(PROC_DIR) 
 VIRAL_DIR = str(VIRAL_DIR)
+IGV_GENOME = str(IGV_GENOME)
+IGV_BOWTIE_INDEX = IGV_GENOME[:-6]
 
 # Check for input files
 R1_SEQ_INPUT = Path(config["Seq_Path"]) / config["R1"]
@@ -195,16 +219,16 @@ if not "reportMB" in config:
 # Target Rules
 rule all:
   input: 
+#    IFR1=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.internalfrags.fastq.gz", sample=SAMPLES),
+#    IFR2=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.internalfrags.fastq.gz", sample=SAMPLES),
     stdSites=PROC_DIR + "/output_data/standardized_uniq_sites.rds",
     condSites=PROC_DIR + "/output_data/condensed_sites.csv",
     xofilSites=PROC_DIR + "/output_data/xofil_condensed_sites.csv",
     readMat=PROC_DIR + "/output_data/read_site_matrix.csv",
     fragMat=PROC_DIR + "/output_data/fragment_site_matrix.csv",
     sumTbl=PROC_DIR + "/output_data/summary_table.csv",
-#    IFR1=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.internalfrags.fastq.gz", sample=SAMPLES),
-#    IFR2=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.internalfrags.fastq.gz", sample=SAMPLES),
-    report=PROC_DIR + "/output_data/report." + RUN + "." + config["reportFormat"]
-        
+    report=PROC_DIR + "/output_data/report." + RUN + "." + config["reportFormat"],
+    IGVimage=expand(PROC_DIR + "/output_data/IGV.{sample}.alignment.png", sample=SAMPLES)
 
 # Processing Rules
 include: "rules/demulti.rules"
@@ -214,3 +238,4 @@ include: "rules/consol.rules"
 include: "rules/align.blat.rules"
 include: "rules/process.rules"
 include: "rules/ifseqs.rules"
+include: "rules/igv.rules"

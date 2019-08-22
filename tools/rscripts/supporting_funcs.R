@@ -441,7 +441,7 @@ filter_crossovers <- function(sites, sample_col = NULL, counts_col = NULL,
     })
   }
   
-  adj_sites <- unique_granges(adj_sites, counts.col = counts_col)
+  adj_sites <- unique_granges(adj_sites, sum.cols = counts_col)
   
   return(adj_sites)
   

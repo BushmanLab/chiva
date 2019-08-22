@@ -1,0 +1,39 @@
+# -*- mode: Snakemake -*-
+# IGV Rules
+
+igv_prefs = {'ENABLE_ANTIALIASING': True, 'NAME_PANEL_WIDTH': 360, 'SAM.MAX_VISIBLE_RANGE': 1000, 'SAM.SHOW_CENTER_LINE': False, 'SAM.SHOW_ALIGNMENT_TRACK': False}
+
+rule bowtie:
+    output:
+        temp(PROC_DIR + "/analysis_data/{sample}.bam")
+    input:
+        #R1=PROC_DIR + "/analysis_data/{sample}.R1.trim.fastq.gz",
+        R2=PROC_DIR + "/analysis_data/{sample}.R2.trim.primer.fastq.gz",
+        genome=IGV_GENOME
+    params:
+        samtools="samtools",
+        bowtie="/usr/bin/bowtie2",
+        bowtie_index=IGV_BOWTIE_INDEX
+    shell:
+        "{params.bowtie} -x {params.bowtie_index} -U {input.R2} | {params.samtools} sort | {params.samtools} view -Sb - > {output}"
+
+rule bowtie_index:
+    output:
+        temp(PROC_DIR + "/analysis_data/{sample}.bam.bai")
+    input:
+        bam=PROC_DIR + "/analysis_data/{sample}.bam"
+    params:
+        samtools="/usr/bin/samtools"
+    shell:
+        "{params.samtools} index {input.bam}"
+
+rule igv:
+    output:
+        PROC_DIR + "/output_data/IGV.{sample}.alignment.png"
+    input:
+        bam=PROC_DIR + "/analysis_data/{sample}.bam",
+        bam_index=PROC_DIR + "/analysis_data/{sample}.bam.bai",
+        genome=IGV_GENOME
+    run:
+        sbx_igv.render(input.genome, [input.bam], output, igv_prefs=igv_prefs)
+

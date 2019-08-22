@@ -4,6 +4,10 @@
 
 # Session Data files
 .RData
+**.Rproj
+
+# Default processing directory for test run
+etc/tests/HIV_test/
 
 # Example code in package build process
 *-Ex.R

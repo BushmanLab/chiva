@@ -47,10 +47,10 @@ uniq_reads <- fread(uniqueSitesFile, sep = ",") %>%
 
 ## All samples refined together
 uniq_sites <- refine_breakpoints(uniq_reads, counts = "counts")
-uniq_sites <- unique_granges(uniq_sites, counts.col = "counts")
+uniq_sites <- unique_granges(uniq_sites, sum.cols = "counts")
 
 uniq_sites <- standardize_sites(uniq_sites)
-uniq_sites <- unique_granges(uniq_sites, counts.col = "counts")
+uniq_sites <- unique_granges(uniq_sites, sum.cols = "counts")
 uniq_sites$posid <- generate_posid(uniq_sites)
 
 cond_sites <- condense_intsites(
