@@ -17,12 +17,12 @@ def main( argv = sys.argv ):
             "environment and try this command again.")
 
     root_dir = os.getenv("CHIVA_DIR")
-    r_script = Path(root_dir + "/tools/rscripts/generate_cHIVa_report.R")
+    r_script = Path(root_dir + "/tools/rscripts/generate_HIV_report.R")
     
     if not r_script.is_file():
         sys.stderr.write(
             "Error: Could not find a {0} in directory '{1}'\n".format(
-                "generate_cHIVa_report.R", root_dir + "/tools/rscripts/"
+                "generate_HIV_report.R", root_dir + "/tools/rscripts/"
             )
         )
         sys.exit(1)

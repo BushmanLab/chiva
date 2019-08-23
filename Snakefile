@@ -8,10 +8,9 @@ import re
 import yaml
 import configparser
 from pathlib import Path
-from chivalib import import_sample_info, choose_sequence_data
+from chivalib import import_sample_info, choose_sequence_data, igv_render
 sys.path.append('/home/kevin/anaconda3/envs/qiime1/lib/python2.7/site-packages/')
 sys.path.append('/home/kevin/dev/sunbeam')
-import sbx_igv
 #from snakemake.utils import R
 #from subprocess import DEVNULL, STDOUT, check_call
 

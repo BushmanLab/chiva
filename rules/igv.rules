@@ -35,5 +35,5 @@ rule igv:
         bam_index=PROC_DIR + "/analysis_data/{sample}.bam.bai",
         genome=IGV_GENOME
     run:
-        sbx_igv.render(input.genome, [input.bam], output, igv_prefs=igv_prefs)
+        igv_render(input.genome, [input.bam], output, igv_prefs=igv_prefs)
 
