@@ -1,0 +1,4 @@
+Building DAG of jobs...
+MissingInputException in line 42 of /home/kevin/dev/chiva/rules/BLAST.rules:
+Missing input files for rule fasta_conversion:
+/home/kevin/projects/bar_hiv/GTSP2715/analysis_data/GTSP2715-U3-1.fastq.gz

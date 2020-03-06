@@ -6,7 +6,7 @@ rule align:
     seq = PROC_DIR + "/analysis_data/{sample}.{read}.consol.fasta",
     genome = config["Ref_Genome_Path"]
   output:
-    temp(PROC_DIR + "/analysis_data/{sample}.{read}.psl")
+    PROC_DIR + "/analysis_data/{sample}.{read}.psl"
   params:
     config["BLATparams"]
   log:
@@ -27,11 +27,11 @@ rule align:
 
 rule compress_align:
   input: PROC_DIR + "/analysis_data/{sample}.{read}.psl"
-  output: temp(PROC_DIR + "/analysis_data/{sample}.{read}.psl.gz")
+  output: PROC_DIR + "/analysis_data/{sample}.{read}.psl.gz"
   shell: "gzip {input}"
 
 rule generate_2bit:
-  input: PROC_DIR + "/" + RUN + ".config.yml"
+  input: ancient(PROC_DIR + "/" + RUN + ".config.yml")
   output: temp(config["Ref_Genome_Path"])
   params: config["Ref_Genome"]
   shell:

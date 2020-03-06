@@ -5,8 +5,8 @@ rule consolidate:
   input:
     PROC_DIR + "/analysis_data/{sample}.{read}.filt.fastq.gz"
   output:
-    consol=temp(PROC_DIR + "/analysis_data/{sample}.{read}.consol.fasta"),
-    key=temp(PROC_DIR + "/analysis_data/{sample}.{read}.key.csv")
+    consol=PROC_DIR + "/analysis_data/{sample}.{read}.consol.fasta",
+    key=PROC_DIR + "/analysis_data/{sample}.{read}.key.csv"
   params:
     tool=CODE_DIR + "/consol.R"
   log:
@@ -16,7 +16,7 @@ rule consolidate:
   shell:
     "Rscript {params.tool} {input} -o {output.consol} -k {output.key} > {log} 2>&1"
 
-rule consolidate_interal_seqs:
+rule consolidate_internal_seqs:
   input:
     PROC_DIR + "/analysis_data/internalfrags/{sample}.{read}.ns.if.fastq.gz"
   output:

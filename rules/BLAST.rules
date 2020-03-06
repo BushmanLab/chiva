@@ -1,0 +1,53 @@
+# -*- mode: Snakemake -*-
+# BLAST Mapping Rules
+
+rule combine_blast:
+  output:
+    summary=PROC_DIR + "/analysis_data/{sample}.blast.summary.csv"
+  input:
+    blast_R1=PROC_DIR + "/analysis_data/{sample}.R1.blast.tbl",
+    blast_R2=PROC_DIR + "/analysis_data/{sample}.R2.blast.tbl",
+    fasta_R1=PROC_DIR + "/analysis_data/{sample}.R1.blast.fasta",
+    fasta_R2=PROC_DIR + "/analysis_data/{sample}.R2.blast.fasta"
+  params:
+    tool=CODE_DIR + "/combine_blast_sample.R"
+  log:
+    PROC_DIR + "/logs/combine_blast." + RUN + ".{sample}.log"
+  shell:
+    """
+    Rscript {params.tool} --blast1 {input.blast_R1} --blast2 {input.blast_R2} \
+    --fasta1 {input.fasta_R1} --fasta2 {input.fasta_R2} --summary {output.summary} > {log} 2>&1
+    """
+
+
+rule blast:
+  output:
+    PROC_DIR + "/analysis_data/{read}.blast.tbl"
+  input:
+    PROC_DIR + "/analysis_data/{read}.blast.fasta"
+  params:
+    blast="blastn",
+    blast_db=BLAST_DB
+  log:
+    PROC_DIR + "/logs/blast." + RUN + ".{read}.log"
+  shell:
+    """
+    {params.blast} -db {params.blast_db} -query {input} \
+    -outfmt "6 qseqid qseq qlen qstart qend sseqid sseq sstrand slen sstart \
+    send evalue bitscore score length pident nident mismatch btop" > {output} \
+    2> {log}
+    """
+
+rule fasta_conversion:
+  output:
+    PROC_DIR + "/analysis_data/{read}.blast.fasta"
+  input:
+    PROC_DIR + "/analysis_data/{read}.fastq.gz"
+  params:
+    seqtk="seqtk"
+  log:
+    PROC_DIR + "/logs/fasta." + RUN + ".{read}.log"
+  shell:
+    """
+    {params.seqtk} seq -a {input} > {output} 2> {log}
+    """

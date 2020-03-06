@@ -3,14 +3,14 @@
 
 rule demultiplex:
   input:
-    configFile=PROC_DIR + "/" + RUN + ".config.yml",
     sampleInfo=ancient(config["Sample_Info"]),
     R1=R1_SEQ_INPUT,
     R2=R2_SEQ_INPUT,
     I1=I1_SEQ_INPUT
   output:
-    temp(expand(PROC_DIR + "/analysis_data/{sample}.{type}.fastq.gz", sample=SAMPLES, type=TYPES))
+    expand(PROC_DIR + "/analysis_data/{sample}.{type}.fastq.gz", sample=SAMPLES, type=TYPES)
   params:
+    configFile=PROC_DIR + "/" + RUN + ".config.yml",
     proc=PROC_DIR,
     tool=CODE_DIR + "/demulti.R",
     bc1Len=config["barcode1Length"],

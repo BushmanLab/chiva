@@ -84,7 +84,7 @@ __version__ = get_chiva_version( with_hash = True )
 
 
 
-def igv_render(genome, bams, imagefile, seqID=None, igv_fp="igv", method="script", igv_prefs=None):
+def igv_render(genome, bams, imagefile, gff3=None, expand=False, seqID=None, locusRange=None, maxPanelHeight=40, igv_fp="igv", method="script", igv_prefs=None):
         """ Render an alignment to an image, given a genome and bam files.
         genome: path to a fasta file
         bams: list of path to a sorted, indexed bam file
@@ -105,13 +105,20 @@ def igv_render(genome, bams, imagefile, seqID=None, igv_fp="igv", method="script
         output_path = str( Path('.').resolve() / Path(imagefile) )
         # build a "seqID:1:length" string to force IGV to display the full
         # segment.  If no segment was given it will default to the first.
-        goto_locus = _seq_length(genome, seqID)
-        goto_locus = "%s:%s-%s" % (goto_locus[0], '1', goto_locus[1])
+        if locusRange:
+            goto_locus = locusRange
+        else:
+            goto_locus = _seq_length(genome, seqID)
+            goto_locus = "%s:%s-%s" % (goto_locus[0], '1', goto_locus[1])
+        expand_or_collapse = 'expand' if expand else 'collapse'
+        gff3_string = 'load ' + str(Path(gff3).resolve()) if gff3 else ''
         igvcommands = ['new',
             'genome ' + genome_path,
             'goto ' + goto_locus,
             'load ' + ','.join(input_paths),
-            'collapse',
+            gff3_string,
+            expand_or_collapse,
+            'maxPanelHeight ' + str(maxPanelHeight),
             'snapshot ' + output_path,
             'exit']
         if method == "script":
@@ -136,7 +143,9 @@ def _control_script(igvcommands, igv_fp, igv_prefs):
         igvscript.writelines(map(lambda x: bytes(x+'\n', 'ascii'), igvcommands))
         igvscript.flush()
         igvprefsfile = _write_prefs(igv_prefs)
-        shell("xvfb-run -a -s '-screen 1 1920x1080x24' %s -o %s -b %s" % (igv_fp, igvprefsfile.name, igvscript.name))
+        igvcommandstring = "xvfb-run -a -s '-screen 1 1920x1080x24' %s -o %s -b %s" % (igv_fp, igvprefsfile.name, igvscript.name)
+        print(igvcommandstring)
+        shell(igvcommandstring)
 
 def _control_socket(igvcommands, igv_fp, igv_prefs):
         igvprefsfile = _write_prefs(igv_prefs)

@@ -284,7 +284,8 @@ if( length(seqs) == 0 ){
   q()
   
 }
-
+print(paste0("args: ", args$minSeqLength, args$leadTrimSeq, args$phasing))
+print(args$minSeqLength + nchar(args$leadTrimSeq) + args$phasing)
 # Remove sequences that do not contain enough sequence information
 seqs <- seqs[
   Biostrings::width(seqs) >= (
@@ -328,7 +329,7 @@ if( args$cores <= 1 ){
   lead_trimmed_tbl <- logSeqData(trimmed_seqs)
   cat("\nSequence information remaining after lead trimming:\n")
   print(lead_trimmed_tbl, row.names = FALSE)
-  
+
   # Overread trimming
   if( nchar(args$overTrimSeq) > 0 ){
     

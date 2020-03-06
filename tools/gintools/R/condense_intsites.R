@@ -67,9 +67,16 @@ condense_intsites <- function(sites.to.condense, grouping = NULL,
   group_ids <- S4Vectors::unique(sites.to.condense$group.id)
   first_hits <- match(group_ids, sites.to.condense$group.id)
 
+  counts_df <- GenomicRanges::flank(sites.to.condense, -1, start = TRUE) %>%
+    as.data.frame() %>%
+    group_by(group.id) %>%
+    summarize(counts=sum(counts)) %>%
+    ungroup()
+  
   condensed_gr <- GenomicRanges::flank(sites.to.condense, -1, start = TRUE)
   condensed_gr <- condensed_gr[first_hits]
-
+  condensed_gr$counts <- counts_df$counts[match(condensed_gr$group.id, counts_df$group.id)]
+  
   if( return.abundance ){
     
     abund_df <- determine_abundance(

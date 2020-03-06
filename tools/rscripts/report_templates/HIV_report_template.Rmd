@@ -170,7 +170,7 @@ summary_print_a <- dplyr::select(
   summary_print, -Shannon, -Gini, -UC50, -S.chao1
 )
 
-pander(
+pander::pander(
   summary_print_a,
   style = "simple", 
   digits = 3, 
@@ -212,7 +212,7 @@ summary_print_b <- dplyr::select(
     summary_print, -Reads, -InferredCells, -UniqueSites, -DualDetect
   )
 
-pander(
+pander::pander(
   summary_print_b,
   style = "simple", 
   digits = 3, 
@@ -258,7 +258,9 @@ spec_per_row <- 10
 
 considered_pats <- unique(summary_tbl$patient)
 considered_pats <- considered_pats[!grepl("UNC", considered_pats)]
+considered_pats <- considered_pats[!grepl("UTC", considered_pats)]
 considered_pats <- considered_pats[!grepl("NTC", considered_pats)]
+considered_pats <- considered_pats[!is.na(considered_pats)]
 
 low_abund_color <- "#E0E0E0"
 
@@ -373,7 +375,7 @@ top_gene_ids <- top_gene_ids_by_pat %>%
   dplyr::distinct(univ.id, gene.id) %>%
   dplyr::sample_n(size = nrow(.), replace = FALSE)
 
-colors_barplot <- colorRampPalette(brewer.pal(12, "Paired"))(nrow(top_gene_ids))
+colors_barplot <- colorRampPalette(RColorBrewer::brewer.pal(12, "Paired"))(nrow(top_gene_ids))
 
 top_gene_ids <- dplyr::mutate(top_gene_ids, color = colors_barplot)
 
@@ -470,7 +472,7 @@ barplots <- mapply(
             aes(x = specimen, y = relAbund, fill = mod.gene.id)
           )
         }
-        
+
         p <- p +
           geom_bar(stat = "identity") + 
           #facet_wrap(

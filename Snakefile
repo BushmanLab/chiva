@@ -26,7 +26,7 @@ if ".csv" in config["Sample_Info"]:
 elif ".tsv" in config["Sample_Info"]:
     delim = "\t"
 else:
-    raise SystemExit("Sample Info file contain extention '.csv' or '.tsv'.")
+    raise SystemExit("Sample Info file must contain extention '.csv' or '.tsv'.")
 
 # Slashes should always be interpreted as directory separators.
 wildcard_constraints:
@@ -38,6 +38,8 @@ sampleInfo = import_sample_info(
     config["Sample_Info"], config["Sample_Name_Column"], delim)
 
 SAMPLES=sampleInfo[config["Sample_Name_Column"]]
+SAMPLES_U3={x: SAMPLES[x] for x in SAMPLES if sampleInfo[config["Unique_Region_Column"]][x]=="U3"}
+SAMPLES_U5={x: SAMPLES[x] for x in SAMPLES if sampleInfo[config["Unique_Region_Column"]][x]=="U5"}
 TYPES=config["Read_Types"]
 READS=config["Genomic_Reads"]
 
@@ -146,7 +148,7 @@ if "IGV_Genome" in config:
         abs_IGV_GENOME = Path(os.path.join(ROOT_DIR, IGV_GENOME))
         if not abs_IGV_GENOME.exists():
             raise SystemExit(
-                "Cannot locate viral genome (for IGV & Bowtie) directory: {} (tried {})".format(config["IGV_Genome"], abs_IGV_GENOME)
+                "Cannot locate viral genome (for IGV & Bowtie) file: {} (tried {})".format(config["IGV_Genome"], abs_IGV_GENOME)
             )
         else:
             IGV_GENOME = abs_IGV_GENOME
@@ -155,6 +157,35 @@ else:
 
 print("Using IGV_Genome: {}".format(IGV_GENOME))
 
+if "IGV_Genome_Name" in config:
+    IGV_GENOME_NAME = config["IGV_Genome_Name"]
+else:
+    IGV_GENOME_NAME = "K03455|HIVHXB2CG"
+
+print("Using IGV_Genome: {}".format(IGV_GENOME))
+
+if "IGV_GFF3" in config:
+    IGV_GFF3 = Path(config["IGV_GFF3"])
+    if not IGV_GFF3.exists():
+        abs_IGV_GFF3 = Path(os.path.join(ROOT_DIR, IGV_GFF3))
+        if not abs_IGV_GFF3.exists():
+            raise SystemExit(
+                "Cannot locate viral GFF3 (for IGV) file: {} (tried {})".format(config["IGV_GFF3"], abs_IGV_GFF3)
+            )
+        else:
+            IGV_GFF3 = abs_IGV_GFF3
+else:
+    IGV_GFF3 = Path(ROOT_DIR) / "genomes/viral_genomes/HIV_HXB2.gff3"
+
+print("Using IGV_GFF3: {}".format(IGV_GFF3))
+
+if "BLAST_DB" in config:
+    BLAST_DB = config["BLAST_DB"]
+else:
+    BLAST_DB = ""
+
+print("Using BLAST_DB: {}".format(BLAST_DB))
+
 # Change to strings
 ROOT_DIR = str(ROOT_DIR)
 CODE_DIR = str(CODE_DIR)
@@ -162,9 +193,12 @@ PROC_DIR = str(PROC_DIR)
 VIRAL_DIR = str(VIRAL_DIR)
 IGV_GENOME = str(IGV_GENOME)
 IGV_BOWTIE_INDEX = IGV_GENOME[:-6]
+IGV_GFF3 = str(IGV_GFF3)
+BLAST_DB = str(BLAST_DB)
 
 # Check for input files
 R1_SEQ_INPUT = Path(config["Seq_Path"]) / config["R1"]
+print(R1_SEQ_INPUT)
 if not R1_SEQ_INPUT.exists():
     proc_R1_SEQ_INPUT = Path(PROC_DIR) / config["R1"]
     if not proc_R1_SEQ_INPUT.exists():
@@ -218,16 +252,30 @@ if not "reportMB" in config:
 # Target Rules
 rule all:
   input: 
-#    IFR1=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.internalfrags.fastq.gz", sample=SAMPLES),
-#    IFR2=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.internalfrags.fastq.gz", sample=SAMPLES),
-    stdSites=PROC_DIR + "/output_data/standardized_uniq_sites.rds",
-    condSites=PROC_DIR + "/output_data/condensed_sites.csv",
-    xofilSites=PROC_DIR + "/output_data/xofil_condensed_sites.csv",
-    readMat=PROC_DIR + "/output_data/read_site_matrix.csv",
-    fragMat=PROC_DIR + "/output_data/fragment_site_matrix.csv",
-    sumTbl=PROC_DIR + "/output_data/summary_table.csv",
+    #IFR1=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.internalfrags.fastq.gz", sample=SAMPLES),
+    #IFR2=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.internalfrags.fastq.gz", sample=SAMPLES),
+    condSites=PROC_DIR + "/output_data/condensed_sites." + RUN + ".csv",
+    fragMat=PROC_DIR + "/output_data/fragment_site_matrix." + RUN + ".csv",
+    readMat=PROC_DIR + "/output_data/read_site_matrix." + RUN + ".csv",
     report=PROC_DIR + "/output_data/report." + RUN + "." + config["reportFormat"],
-    IGVimage=expand(PROC_DIR + "/output_data/IGV.{sample}.alignment.png", sample=SAMPLES)
+    stdSites=PROC_DIR + "/output_data/standardized_uniq_sites." + RUN + ".rds",
+    sumTbl=PROC_DIR + "/output_data/summary_table." + RUN + ".csv",
+    xofilSites=PROC_DIR + "/output_data/xofil_condensed_sites." + RUN + ".csv",
+    LTR_all_metadata=expand(PROC_DIR + "/metadata/all_combined.csv", sample=SAMPLES),
+    LTR_metadata=expand(PROC_DIR + "/metadata/samples/{sample}.csv", sample=SAMPLES),
+#    BLAST_summary=expand(PROC_DIR + "/analysis_data/{sample}.blast.summary.csv", sample=SAMPLES),
+#    bowtie_paired=expand(PROC_DIR + "/analysis_data/{sample}.paired.bam", sample=SAMPLES),
+#    bowtie_paired_index=expand(PROC_DIR + "/analysis_data/{sample}.paired.bam.bai", sample=SAMPLES),
+#    IGVimage_all=PROC_DIR + "/output_data/IGV/all.alignment.png",
+#    IGVimage_all_U3_3LTR=PROC_DIR + "/output_data/IGV/all.U3.3LTR.alignment.png",
+#    IGVimage_all_U3_5LTR=PROC_DIR + "/output_data/IGV/all.U3.5LTR.alignment.png",
+#    IGVimage_all_U5_3LTR=PROC_DIR + "/output_data/IGV/all.U5.3LTR.alignment.png",
+#    IGVimage_all_U5_5LTR=PROC_DIR + "/output_data/IGV/all.U5.5LTR.alignment.png",
+#    IGVimage=expand(PROC_DIR + "/output_data/IGV/{sample}.alignment.png", sample=SAMPLES),
+#    IGVimageU3=expand(PROC_DIR + "/output_data/IGV/{sample}.U3.alignment.png", sample=SAMPLES),
+#    IGVimageU5=expand(PROC_DIR + "/output_data/IGV/{sample}.U5.alignment.png", sample=SAMPLES),
+    #QC=PROC_DIR + "/output_data/QC_table." + RUN + ".csv"
+    #sampleFasta=expand(PROC_DIR + "/analysis_data/{sample}.fasta", sample=SAMPLES)
 
 # Processing Rules
 include: "rules/demulti.rules"
@@ -238,3 +286,6 @@ include: "rules/align.blat.rules"
 include: "rules/process.rules"
 include: "rules/ifseqs.rules"
 include: "rules/igv.rules"
+include: "rules/QC.rules"
+include: "rules/BLAST.rules"
+#include: "rules/ref.map.rules"

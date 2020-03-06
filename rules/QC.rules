@@ -1,0 +1,91 @@
+# -*- mode: Snakemake -*-
+# Rerence Mapping Rules
+
+rule LTR_QC:
+  output:
+    PROC_DIR + "/metadata/samples/{sample}.csv"
+  input:
+    PROC_DIR + "/analysis_data/{sample}.R2.fastq.gz"
+  params:
+    tool=CODE_DIR + "/identify_LTR.R"
+  log:
+    PROC_DIR + "/logs/qc.ltr." + RUN + ".{sample}.log"
+  shell:
+    """
+    Rscript {params.tool} --input {input} --output {output} > {log} 2>&1
+    """
+
+rule all_LTR_QC:
+  input:
+    expand(PROC_DIR + "/metadata/samples/{sample}.csv", sample=SAMPLES)
+  output:
+    PROC_DIR + "/metadata/all.csv"
+  shell:
+    """
+    OUT_DIR="{PROC_DIR}/metadata/samples"
+    head -n 1 -q ${{OUT_DIR}}/* | uniq > {output}
+    cat ${{OUT_DIR}}/* | sed '/primer/d'>> {output}
+    
+    """
+
+rule combine_LTR_QC:
+  input:
+    PROC_DIR + "/metadata/all.csv"
+  output:
+    PROC_DIR + "/metadata/all_combined.csv"
+  params:
+    tool=CODE_DIR + "/combine_LTR.R"
+  log:
+    PROC_DIR + "/logs/qc.ltr." + RUN + ".all.log"
+  shell:
+    """
+    Rscript {params.tool} --input {input} --output {output} > {log} 2>&1    
+    """
+
+rule QC:
+  output:
+    PROC_DIR + "/QC/{sample}.csv"
+  input:
+    R1=PROC_DIR + "/analysis_data/{sample}.R1.fastq.gz",
+    R1_trim=PROC_DIR + "/analysis_data/{sample}.R1.trim.fastq.gz",
+    R1_filt=PROC_DIR + "/analysis_data/{sample}.R1.filt.fastq.gz",
+    R1_consol=PROC_DIR + "/analysis_data/{sample}.R1.consol.fasta",
+    R1_key=PROC_DIR + "/analysis_data/{sample}.R1.key.csv",
+    R1_psl=PROC_DIR + "/analysis_data/{sample}.R1.psl.gz",
+    R2=PROC_DIR + "/analysis_data/{sample}.R2.fastq.gz",
+    R2_primer=PROC_DIR + "/analysis_data/{sample}.R2.trim.primer.fastq.gz",
+    R2_ltr=PROC_DIR + "/analysis_data/{sample}.R2.trim.ltr.fastq.gz",
+    R2_trim=PROC_DIR + "/analysis_data/{sample}.R2.trim.fastq.gz",
+    R2_filt=PROC_DIR + "/analysis_data/{sample}.R2.filt.fastq.gz",
+    R2_consol=PROC_DIR + "/analysis_data/{sample}.R2.consol.fasta",
+    R2_key=PROC_DIR + "/analysis_data/{sample}.R2.key.csv",
+    R2_psl=PROC_DIR + "/analysis_data/{sample}.R2.psl.gz"
+  params:
+    tool=CODE_DIR + "/QC.R",
+    sampleID=lambda wildcards: wildcards.sample,
+    LTR=lambda wildcards: R2_LTR[wildcards.sample]
+  log:
+    PROC_DIR + "/logs/qc." + RUN + ".{sample}.log"
+  shell:
+    """
+    Rscript {params.tool} --read1 {input.R1} --read2 {input.R2} \
+    --trim1 {input.R1_trim} --primer2 {input.R2_primer} \
+    --LTR2 {input.R2_ltr} --trim2 {input.R2_trim} \
+    --consol1 {input.R1_consol} --consol2 {input.R2_consol} \
+    --key1 {input.R1_key} --key2 {input.R2_key} \
+    --psl1 {input.R1_psl} --psl2 {input.R2_psl} \
+    --ltr {params.LTR} -s {params.sampleID} -o {output} > {log} 2>&1
+    """
+
+rule all_QC:
+  input:
+    expand(PROC_DIR + "/QC/{sample}.csv", sample=SAMPLES)
+  output:
+    PROC_DIR + "/output_data/QC_table." + RUN + ".csv"
+  shell:
+    """
+    OUT_DIR="{PROC_DIR}/QC"
+    head -n 1 -q ${{OUT_DIR}}/* | uniq > {output}
+    cat ${{OUT_DIR}}/* | sed '/SampleID/d' >> {output}
+    """
+    

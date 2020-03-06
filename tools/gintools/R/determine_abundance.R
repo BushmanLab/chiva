@@ -39,7 +39,7 @@
 
 determine_abundance <- function(sites, grouping = NULL, replicates = NULL,
                                 method = "fragLen"){
-  
+
   sites$posid <- generate_posid(sites)
   in_mcols <- GenomicRanges::mcols(sites)
   GenomicRanges::mcols(sites) <- NULL

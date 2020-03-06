@@ -1,0 +1,26 @@
+# -*- mode: Snakemake -*-
+# Rerence Mapping Rules
+
+
+rule ref_map:
+    output:
+        fasta=PROC_DIR + "/analysis_data/{sample}.fasta"
+    input:
+        R2=PROC_DIR + "/analysis_data/{sample}.R2.fastq.gz"
+    params:
+        tool=CODE_DIR + "/refMap.R",
+        bowtie="/usr/bin/bowtie2",
+        bowtie_build="/usr/bin/bowtie2-build",
+        bowtie_index=IGV_BOWTIE_INDEX,
+        genome=IGV_GENOME
+    log:
+        PROC_DIR + "/logs/refMap." + RUN + ".{sample}.log"
+    resources:
+        mem_mb=lambda wildcards, attempt: attempt * config["demultiMB"]
+    shell:
+        """
+        Rscript {params.tool} --read2 {input.R2} --genome {params.genome} \
+        --bowtie {params.bowtie} --index {params.bowtie_index} -o {output.fasta} \
+        --build {params.bowtie_build} > {log} 2>&1
+        """
+

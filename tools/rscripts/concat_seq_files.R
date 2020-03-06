@@ -10,7 +10,7 @@ options(stringsAsFactors = FALSE, scipen = 99, width = 999)
 
 args <- commandArgs(trailingOnly = TRUE)
 
-input_files <- list.files(path = args[1], pattern = "fasta")
+input_files <- list.files(path = args[1], pattern = "fasta$")
 
 input_seqs <- Biostrings::readDNAStringSet(
   filepath = file.path(args[1], input_files), format = "fasta"

@@ -23,7 +23,7 @@ assign_gene_id <- function(seqnames, positions, reference, ref_genes,
     seqnames = seqnames,
     ranges = IRanges(start = positions, width = 1),
     strand = "+",
-    seqinfo = seqinfo(reference))
+    seqinfo = GenomeInfoDb::seqinfo(reference))
   
   # Annotate Sites with Gene names for within and nearest genes
   gr <- getSitesInFeature(
@@ -136,7 +136,7 @@ mindex_to_granges <- function(mindex, strand, ref){
     seqnames = names(ir),
     ranges = ir,
     strand = strand,
-    seqinfo = seqinfo(ref)))
+    seqinfo = GenomeInfoDb::seqinfo(ref)))
 }
 
 #' Read psl.gz files into data.frame
@@ -331,8 +331,9 @@ filter_crossovers <- function(sites, sample_col = NULL, counts_col = NULL,
   # Require essential packages
   packs <- c("GenomicRanges", "igraph", "gintools")
   stopifnot(all(sapply(packs, require, character.only = TRUE)))
-  
+
   # Check inputs
+  stopifnot(length(sites)>0)
   stopifnot(!is.null(sample_col))
   stopifnot(!is.null(counts_col))
   sampleNames <- mcols(sites)[,sample_col]
@@ -352,13 +353,13 @@ filter_crossovers <- function(sites, sample_col = NULL, counts_col = NULL,
       sampleNames = Rle(values = sampleNames, lengths = read_counts),
       pos_id = Rle(values = generate_posid(sites), lengths = read_counts)))
 
+  # If one sample, then just take all sites
   crossover_pos_id <- colnames(assign_matrix)[
     which(colSums(assign_matrix > 0) > 0)]
-  if(nrow(assign_matrix) > 1) {
+  if(nrow(assign_matrix) > 1 & max(colSums(assign_matrix > 0)) > 1) {
     crossover_pos_id <- colnames(assign_matrix)[
       which(colSums(assign_matrix > 0) > 1)]
   }
-  # If one sample, then just take all sites
   crossover_sites <- sites[generate_posid(sites) %in% crossover_pos_id]
   
   # For reads to be reassigned, they need to share the same site and breakpoint

@@ -38,27 +38,6 @@ rule all_uniq_sites:
     cat ${{OUT_DIR}}/uniqSites/* | sed '/seqnames/d' >> {output}
     """
 
-rule initial_assessment:
-  input:
-    PROC_DIR + "/output_data/unique_sites." + RUN + ".csv"
-  output:
-    stdSites=PROC_DIR + "/output_data/standardized_uniq_sites.rds",
-    condSites=PROC_DIR + "/output_data/condensed_sites.csv",
-    xofilSites=PROC_DIR + "/output_data/xofil_condensed_sites.csv",
-    readMat=PROC_DIR + "/output_data/read_site_matrix.csv",
-    fragMat=PROC_DIR + "/output_data/fragment_site_matrix.csv",
-    sumTbl=PROC_DIR + "/output_data/summary_table.csv"
-  params:
-    tool=CODE_DIR + "/initial_assessment.R",
-    proc=PROC_DIR + "/output_data",
-    inst=ROOT_DIR
-  log:
-    PROC_DIR + "/logs/" + RUN + ".init.assessment.log"
-  resources:
-    mem_mb=lambda wildcards, attempt: attempt * config["processMB"]
-  shell:
-    "Rscript {params.tool} {input} {params.proc} {params.inst} > {log} 2>&1"
-    
 def report_supp(wildcards):
   supp_str = str()
   if (config["figures"]): 
@@ -69,14 +48,37 @@ def report_supp(wildcards):
       supp_str = supp_str + "-s " + config["Supplemental_Info"]
   supp_str = supp_str + " -t " + config["reportFormat"]
   return supp_str
-        
+
+rule initial_assessment:
+  input:
+    PROC_DIR + "/output_data/unique_sites." + RUN + ".csv"
+  output:
+    stdSites=PROC_DIR + "/output_data/standardized_uniq_sites." + RUN + ".rds",
+    condSites=PROC_DIR + "/output_data/condensed_sites." + RUN + ".csv",
+    xofilSites=PROC_DIR + "/output_data/xofil_condensed_sites." + RUN + ".csv",
+    readMat=PROC_DIR + "/output_data/read_site_matrix." + RUN + ".csv",
+    fragMat=PROC_DIR + "/output_data/fragment_site_matrix." + RUN + ".csv",
+    sumTbl=PROC_DIR + "/output_data/summary_table." + RUN + ".csv"
+  params:
+    tool=CODE_DIR + "/initial_assessment.R",
+    proc=PROC_DIR + "/output_data",
+    inst=ROOT_DIR,
+    supp = config["Supplemental_Info"],
+    run = RUN
+  log:
+    PROC_DIR + "/logs/" + RUN + ".init.assessment.log"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * config["processMB"]
+  shell:
+    "Rscript {params.tool} {input} {params.proc} {params.run} {params.inst} {params.supp} > {log} 2>&1"
+    
 rule run_report:
-  input: PROC_DIR + "/output_data/standardized_uniq_sites.rds"
+  input: PROC_DIR + "/output_data/standardized_uniq_sites." + RUN + ".rds"
   output: PROC_DIR + "/output_data/report." + RUN + "." + config["reportFormat"]
   params: 
     tool = CODE_DIR + "/generate_HIV_report.R",
     config = PROC_DIR + "/" + RUN + ".config.yml",
-    supp = report_supp
+    supp = config["Supplemental_Info"]
   log: 
     PROC_DIR + "/logs/" + RUN + ".report.log"
   resources:
@@ -84,5 +86,5 @@ rule run_report:
   shell:
     """
     Rscript {params.tool} {input} -o {output} \
-      -c {params.config} {params.supp} > {log} 2>&1
+      -c {params.config} -s {params.supp} > {log} 2>&1
     """
