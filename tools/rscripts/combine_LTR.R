@@ -57,6 +57,8 @@ ltrCombined <- ltrAll %>%
 ltrDf <- data.frame(sampleName=unique(ltrAll$sample)) %>%
   mutate(SampleID=gsub("-[1-4]","",sampleName)) %>%
   left_join(ltrCombined) %>%
+  rename(LTR=LTRseq,
+         R1Over=R1over) %>%
   select(-SampleID)
 
 write.csv(ltrDf, args$output, row.names = FALSE)

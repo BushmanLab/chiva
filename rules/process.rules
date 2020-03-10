@@ -49,9 +49,24 @@ def report_supp(wildcards):
   supp_str = supp_str + " -t " + config["reportFormat"]
   return supp_str
 
+rule create_supp:
+  input:
+    config["Sample_Info"]
+  output:
+    config["Supplemental_Info"]
+  params:
+    tool=CODE_DIR + "/create_supp.R",
+  log: 
+    PROC_DIR + "/logs/" + RUN + ".create_supp.log"
+  shell:
+    """
+    Rscript {params.tool} --sampleInfo {input} --supp {output} > {log} 2>&1
+    """
+
 rule initial_assessment:
   input:
-    PROC_DIR + "/output_data/unique_sites." + RUN + ".csv"
+    data=PROC_DIR + "/output_data/unique_sites." + RUN + ".csv",
+    supp=config["Supplemental_Info"]
   output:
     stdSites=PROC_DIR + "/output_data/standardized_uniq_sites." + RUN + ".rds",
     condSites=PROC_DIR + "/output_data/condensed_sites." + RUN + ".csv",
@@ -63,28 +78,28 @@ rule initial_assessment:
     tool=CODE_DIR + "/initial_assessment.R",
     proc=PROC_DIR + "/output_data",
     inst=ROOT_DIR,
-    supp = config["Supplemental_Info"],
     run = RUN
   log:
     PROC_DIR + "/logs/" + RUN + ".init.assessment.log"
   resources:
     mem_mb=lambda wildcards, attempt: attempt * config["processMB"]
   shell:
-    "Rscript {params.tool} {input} {params.proc} {params.run} {params.inst} {params.supp} > {log} 2>&1"
+    "Rscript {params.tool} {input.data} {params.proc} {params.run} {params.inst} {input.supp} > {log} 2>&1"
     
 rule run_report:
-  input: PROC_DIR + "/output_data/standardized_uniq_sites." + RUN + ".rds"
+  input:
+    data=PROC_DIR + "/output_data/standardized_uniq_sites." + RUN + ".rds",
+    supp=config["Supplemental_Info"]
   output: PROC_DIR + "/output_data/report." + RUN + "." + config["reportFormat"]
   params: 
     tool = CODE_DIR + "/generate_HIV_report.R",
-    config = PROC_DIR + "/" + RUN + ".config.yml",
-    supp = config["Supplemental_Info"]
+    config = PROC_DIR + "/" + RUN + ".config.yml"
   log: 
     PROC_DIR + "/logs/" + RUN + ".report.log"
   resources:
     mem_mb=lambda wildcards, attempt: attempt * config["reportMB"]
   shell:
     """
-    Rscript {params.tool} {input} -o {output} \
-      -c {params.config} -s {params.supp} > {log} 2>&1
+    Rscript {params.tool} {input.data} -o {output} \
+      -c {params.config} -s {input.supp} > {log} 2>&1
     """

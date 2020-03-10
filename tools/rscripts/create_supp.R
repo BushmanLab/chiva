@@ -35,17 +35,20 @@ parser$add_argument(
 args <- parser$parse_args(commandArgs(trailingOnly = TRUE))
 
 sampleInfo <- read.csv(args$sampleInfo)
+samples <- as.character(unique(sampleInfo$sampleName))
 
 dbConn <- dbConnect(MySQL(), group = 'specimen_management')
 d <- dbGetQuery(dbConn, 'select * from gtsp')
-
-samples <- as.character(unique(sampleInfo$sampleName))
-
 samplesToUse <- sapply(d$SpecimenAccNum, function(specimen) {
   if_else(length(grep(specimen, samples))>0, specimen, NULL)
 })
 
 samplesToUse <- samplesToUse[!is.na(samplesToUse) & samplesToUse != ""]
+
+if(length(samplesToUse)==0) {
+  print("No samples found in GTSP database!")
+  q()
+}
 
 supp <- d %>%
   filter(SpecimenAccNum %in% samplesToUse) %>%
