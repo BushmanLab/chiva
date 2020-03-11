@@ -263,6 +263,7 @@ rule all:
     xofilSites=PROC_DIR + "/output_data/xofil_condensed_sites." + RUN + ".csv",
     LTR_all_metadata=expand(PROC_DIR + "/metadata/all_combined.csv", sample=SAMPLES),
     LTR_metadata=expand(PROC_DIR + "/metadata/samples/{sample}.csv", sample=SAMPLES),
+    QC=PROC_DIR + "/output_data/QC_table." + RUN + ".csv"
 #    BLAST_summary=expand(PROC_DIR + "/analysis_data/{sample}.blast.summary.csv", sample=SAMPLES),
 #    bowtie_paired=expand(PROC_DIR + "/analysis_data/{sample}.paired.bam", sample=SAMPLES),
 #    bowtie_paired_index=expand(PROC_DIR + "/analysis_data/{sample}.paired.bam.bai", sample=SAMPLES),
@@ -274,7 +275,6 @@ rule all:
 #    IGVimage=expand(PROC_DIR + "/output_data/IGV/{sample}.alignment.png", sample=SAMPLES),
 #    IGVimageU3=expand(PROC_DIR + "/output_data/IGV/{sample}.U3.alignment.png", sample=SAMPLES),
 #    IGVimageU5=expand(PROC_DIR + "/output_data/IGV/{sample}.U5.alignment.png", sample=SAMPLES),
-    #QC=PROC_DIR + "/output_data/QC_table." + RUN + ".csv"
     #sampleFasta=expand(PROC_DIR + "/analysis_data/{sample}.fasta", sample=SAMPLES)
 
 # Processing Rules

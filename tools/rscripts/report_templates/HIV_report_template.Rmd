@@ -260,6 +260,7 @@ considered_pats <- unique(summary_tbl$patient)
 considered_pats <- considered_pats[!grepl("UNC", considered_pats)]
 considered_pats <- considered_pats[!grepl("UTC", considered_pats)]
 considered_pats <- considered_pats[!grepl("NTC", considered_pats)]
+considered_pats <- considered_pats[!grepl("n/a", considered_pats)]
 considered_pats <- considered_pats[!is.na(considered_pats)]
 
 low_abund_color <- "#E0E0E0"
@@ -559,8 +560,10 @@ max_specs_per_pat <- dplyr::group_by(summary_tbl, patient) %>%
   max(cnt)
 
 considered_pats <- unique(summary_tbl$patient)
+considered_pats <- considered_pats[!grepl("UNC", considered_pats)]
 considered_pats <- considered_pats[!grepl("UTC", considered_pats)]
 considered_pats <- considered_pats[!grepl("NTC", considered_pats)]
+considered_pats <- considered_pats[!grepl("n/a", considered_pats)]
 
 top_gene_summary <- cond_sites %>%
   dplyr::mutate(gene = stringr::str_extract(gene.id, "[\\w\\_\\-]+")) %>%
