@@ -263,7 +263,8 @@ rule all:
     xofilSites=PROC_DIR + "/output_data/xofil_condensed_sites." + RUN + ".csv",
     LTR_all_metadata=expand(PROC_DIR + "/metadata/all_combined.csv", sample=SAMPLES),
     LTR_metadata=expand(PROC_DIR + "/metadata/samples/{sample}.csv", sample=SAMPLES),
-    QC=PROC_DIR + "/output_data/QC_table." + RUN + ".csv"
+    QC=PROC_DIR + "/output_data/QC_table." + RUN + ".csv",
+    QC_report=PROC_DIR + "/output_data/QC_table." + RUN + ".pdf"
 #    BLAST_summary=expand(PROC_DIR + "/analysis_data/{sample}.blast.summary.csv", sample=SAMPLES),
 #    bowtie_paired=expand(PROC_DIR + "/analysis_data/{sample}.paired.bam", sample=SAMPLES),
 #    bowtie_paired_index=expand(PROC_DIR + "/analysis_data/{sample}.paired.bam.bai", sample=SAMPLES),

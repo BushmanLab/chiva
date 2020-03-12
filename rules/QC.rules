@@ -50,7 +50,6 @@ rule QC:
     R1_trim=PROC_DIR + "/analysis_data/{sample}.R1.trim.fastq.gz",
     R1_filt=PROC_DIR + "/analysis_data/{sample}.R1.filt.fastq.gz",
     R1_consol=PROC_DIR + "/analysis_data/{sample}.R1.consol.fasta",
-    R1_key=PROC_DIR + "/analysis_data/{sample}.R1.key.csv",
     R1_psl=PROC_DIR + "/analysis_data/{sample}.R1.psl.gz",
     R2=PROC_DIR + "/analysis_data/{sample}.R2.fastq.gz",
     R2_primer=PROC_DIR + "/analysis_data/{sample}.R2.trim.primer.fastq.gz",
@@ -58,7 +57,6 @@ rule QC:
     R2_trim=PROC_DIR + "/analysis_data/{sample}.R2.trim.fastq.gz",
     R2_filt=PROC_DIR + "/analysis_data/{sample}.R2.filt.fastq.gz",
     R2_consol=PROC_DIR + "/analysis_data/{sample}.R2.consol.fasta",
-    R2_key=PROC_DIR + "/analysis_data/{sample}.R2.key.csv",
     R2_psl=PROC_DIR + "/analysis_data/{sample}.R2.psl.gz"
   params:
     tool=CODE_DIR + "/QC.R",
@@ -72,7 +70,6 @@ rule QC:
     --trim1 {input.R1_trim} --primer2 {input.R2_primer} \
     --LTR2 {input.R2_ltr} --trim2 {input.R2_trim} \
     --consol1 {input.R1_consol} --consol2 {input.R2_consol} \
-    --key1 {input.R1_key} --key2 {input.R2_key} \
     --psl1 {input.R1_psl} --psl2 {input.R2_psl} \
     --ltr {params.LTR} -s {params.sampleID} -o {output} > {log} 2>&1
     """
@@ -88,4 +85,18 @@ rule all_QC:
     head -n 1 -q ${{OUT_DIR}}/* | uniq > {output}
     cat ${{OUT_DIR}}/* | sed '/SampleID/d' >> {output}
     """
-    
+
+rule QC_report:
+  input:
+    PROC_DIR + "/output_data/QC_table." + RUN + ".csv"
+  output:
+    PROC_DIR + "/output_data/QC_table." + RUN + ".pdf"
+  params:
+    tool=CODE_DIR + "/QC_report.R"
+  log:
+    PROC_DIR + "/logs/qc_report." + RUN + ".log"
+  shell:
+    """
+    Rscript {params.tool} -i {input} -o {output} > {log} 2>&1
+
+    """

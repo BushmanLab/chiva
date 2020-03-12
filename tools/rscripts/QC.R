@@ -89,20 +89,38 @@ parser$add_argument(
 
 args <- parser$parse_args(commandArgs(trailingOnly = TRUE))
 
+
+read1 <- as.numeric(system(paste0("zcat ", args$read1, " | wc -l"), intern = TRUE)) / 4
+read2 <- as.numeric(system(paste0("zcat ", args$read2, " | wc -l"), intern = TRUE)) / 4
+trim1 <- as.numeric(system(paste0("zcat ", args$trim1, " | wc -l"), intern = TRUE)) / 4
+primer2 <- as.numeric(system(paste0("zcat ", args$primer2, " | wc -l"), intern = TRUE)) / 4
+LTR2 <- as.numeric(system(paste0("zcat ", args$LTR2, " | wc -l"), intern = TRUE)) / 4
+trim2 <- as.numeric(system(paste0("zcat ", args$trim2, " | wc -l"), intern = TRUE)) / 4
+filt1 <- as.numeric(system(paste0("zcat ", args$filt1, " | wc -l"), intern = TRUE)) / 4
+filt2 <- as.numeric(system(paste0("zcat ", args$filt2, " | wc -l"), intern = TRUE)) / 4
+consol1 <- as.numeric(system(paste0("cat ", args$consol1, " | wc -l"), intern = TRUE)) / 2
+consol2 <- as.numeric(system(paste0("cat ", args$consol2, " | wc -l"), intern = TRUE)) / 2
+psl1 <- as.numeric(system(paste0("zcat ", args$psl1, " | wc -l"), intern = TRUE))
+psl2 <- as.numeric(system(paste0("zcat ", args$psl2, " | wc -l"), intern = TRUE))
+
 result <- data.frame(SampleID=args$sampleID)
-result$read1 <- as.numeric(system(paste0("zcat ", args$read1, " | wc -l"), intern = TRUE)) / 4
-result$read2 <- as.numeric(system(paste0("zcat ", args$read2, " | wc -l"), intern = TRUE)) / 4
-result$trim1 <- as.numeric(system(paste0("zcat ", args$trim1, " | wc -l"), intern = TRUE)) / 4
-result$primer2 <- as.numeric(system(paste0("zcat ", args$primer2, " | wc -l"), intern = TRUE)) / 4
-result$LTR2 <- as.numeric(system(paste0("zcat ", args$LTR2, " | wc -l"), intern = TRUE)) / 4
-result$trim2 <- as.numeric(system(paste0("zcat ", args$trim2, " | wc -l"), intern = TRUE)) / 4
-result$consol1 <- as.numeric(system(paste0("cat ", args$consol1, " | wc -l"), intern = TRUE)) / 2
-result$consol2 <- as.numeric(system(paste0("cat ", args$consol2, " | wc -l"), intern = TRUE)) / 2
+result$read1File <- args$read1
+result$read2File <- args$read2
+result$numSeqs <- ifelse(read1==read2, read1, paste0(read1,"/",read2))
+result$trim1P <- trim1/read1
+result$primer2P <- primer2/read2
+result$LTR2P <- LTR2/read2
+result$trim2P <- trim2/read2
+result$filt1P <- filt1/read1
+result$filt2P <- filt2/read2
+result$consol1P <- consol1/read1
+result$consol2P <- consol2/read2
+result$psl1 <- psl1
+result$psl2 <- psl2
 
+write.table(result, file = args$output, sep=",",
+            quote = FALSE, row.names = FALSE, col.names = TRUE)
 
-
-write.csv(result, file = args$output,
-          quote = FALSE, row.names = FALSE, col.names = TRUE)
 
 q()
 
