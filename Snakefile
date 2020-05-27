@@ -252,9 +252,7 @@ if not "reportMB" in config:
 # Target Rules
 rule all:
   input: 
-    #IFR1=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R1.internalfrags.fastq.gz", sample=SAMPLES),
-    #IFR2=expand(PROC_DIR + "/analysis_data/internalfrags/{sample}.R2.internalfrags.fastq.gz", sample=SAMPLES),
-#    demultiFiles=expand(PROC_DIR + "/analysis_data/{sample}.{type}.fastq.gz", sample=SAMPLES, type=TYPES),
+    demultiFiles=expand(PROC_DIR + "/analysis_data/{sample}.{type}.fastq.gz", sample=SAMPLES, type=TYPES),
     condSites=PROC_DIR + "/output_data/condensed_sites." + RUN + ".csv",
     fragMat=PROC_DIR + "/output_data/fragment_site_matrix." + RUN + ".csv",
     readMat=PROC_DIR + "/output_data/read_site_matrix." + RUN + ".csv",
@@ -262,22 +260,6 @@ rule all:
     stdSites=PROC_DIR + "/output_data/standardized_uniq_sites." + RUN + ".rds",
     sumTbl=PROC_DIR + "/output_data/summary_table." + RUN + ".csv",
     xofilSites=PROC_DIR + "/output_data/xofil_condensed_sites." + RUN + ".csv",
-#    LTR_all_metadata=expand(PROC_DIR + "/metadata/all_combined.csv", sample=SAMPLES),
-#    LTR_metadata=expand(PROC_DIR + "/metadata/samples/{sample}.csv", sample=SAMPLES),
-#    QC=PROC_DIR + "/output_data/QC_table." + RUN + ".csv",
-#    QC_report=PROC_DIR + "/output_data/QC_table." + RUN + ".pdf"
-#    BLAST_summary=expand(PROC_DIR + "/analysis_data/{sample}.blast.summary.csv", sample=SAMPLES),
-#    bowtie_paired=expand(PROC_DIR + "/analysis_data/{sample}.paired.bam", sample=SAMPLES),
-#    bowtie_paired_index=expand(PROC_DIR + "/analysis_data/{sample}.paired.bam.bai", sample=SAMPLES),
-#    IGVimage_all=PROC_DIR + "/output_data/IGV/all.alignment.png",
-#    IGVimage_all_U3_3LTR=PROC_DIR + "/output_data/IGV/all.U3.3LTR.alignment.png",
-#    IGVimage_all_U3_5LTR=PROC_DIR + "/output_data/IGV/all.U3.5LTR.alignment.png",
-#    IGVimage_all_U5_3LTR=PROC_DIR + "/output_data/IGV/all.U5.3LTR.alignment.png",
-#    IGVimage_all_U5_5LTR=PROC_DIR + "/output_data/IGV/all.U5.5LTR.alignment.png",
-#    IGVimage=expand(PROC_DIR + "/output_data/IGV/{sample}.alignment.png", sample=SAMPLES),
-#    IGVimageU3=expand(PROC_DIR + "/output_data/IGV/{sample}.U3.alignment.png", sample=SAMPLES),
-#    IGVimageU5=expand(PROC_DIR + "/output_data/IGV/{sample}.U5.alignment.png", sample=SAMPLES),
-    #sampleFasta=expand(PROC_DIR + "/analysis_data/{sample}.fasta", sample=SAMPLES)
 
 # Processing Rules
 include: "rules/demulti.rules"
@@ -286,8 +268,3 @@ include: "rules/filter.rules"
 include: "rules/consol.rules"
 include: "rules/align.blat.rules"
 include: "rules/process.rules"
-include: "rules/ifseqs.rules"
-include: "rules/igv.rules"
-include: "rules/QC.rules"
-include: "rules/BLAST.rules"
-#include: "rules/ref.map.rules"

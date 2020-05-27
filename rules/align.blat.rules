@@ -1,6 +1,7 @@
 # -*- mode: Snakemake -*-
 # Sequence Alignment: BLAT
 
+# Align sequences to designated human genome
 rule align:
   input:
     seq = PROC_DIR + "/analysis_data/{sample}.{read}.consol.fasta",
@@ -25,25 +26,16 @@ rule align:
     fi
     """
 
+# Compress the alignment files
 rule compress_align:
   input: PROC_DIR + "/analysis_data/{sample}.{read}.psl"
   output: PROC_DIR + "/analysis_data/{sample}.{read}.psl.gz"
   shell: "gzip {input}"
 
+# Generate 2bit blat alignment file
 rule generate_2bit:
-  input: ancient(PROC_DIR + "/" + RUN + ".config.yml")
   output: temp(config["Ref_Genome_Path"])
   params: config["Ref_Genome"]
   shell:
     "Rscript {CODE_DIR}/generate_2bit_genome.R {params} {output}"
 
-rule construct_viral_ref:
-  input: PROC_DIR + "/" + RUN + ".config.yml"
-  output: VIRAL_DIR + "/chiva." + RUN + ".viral.seqs.fasta"
-  params: 
-    dir=VIRAL_DIR,
-    tool=CODE_DIR + "/concat_seq_files.R"
-  log:
-    PROC_DIR + "/logs/" + RUN + "viral.ref.log"
-  shell:
-    "Rscript {params.tool} {params.dir} {output} > {log} 2>&1"

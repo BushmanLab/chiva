@@ -1,6 +1,7 @@
 # -*- mode: Snakemake -*-
 # Post-Alignment Processing: BLAT
 
+# Map reads to genome and create list of unique sites for each sample
 rule post_align:
   input:
     sampleR1=PROC_DIR + "/analysis_data/{sample}.R1.psl.gz",
@@ -26,6 +27,7 @@ rule post_align:
       -g {params.ref} > {log} 2>&1
     """
 
+# Create list of all unique sites
 rule all_uniq_sites:
   input:
     expand(PROC_DIR + "/analysis_data/uniqSites/{sample}.uniq.csv", sample=SAMPLES)
@@ -49,6 +51,7 @@ def report_supp(wildcards):
   supp_str = supp_str + " -t " + config["reportFormat"]
   return supp_str
 
+# Create supplemental info file if it doesn't alrady exist
 rule create_supp:
   input:
     config["Sample_Info"]
@@ -63,6 +66,7 @@ rule create_supp:
     Rscript {params.tool} --sampleInfo {input} --supp {output} > {log} 2>&1
     """
 
+# Standardize and condense int sites, filter for crossovers between samples, and create summary table
 rule initial_assessment:
   input:
     data=PROC_DIR + "/output_data/unique_sites." + RUN + ".csv",
@@ -85,7 +89,8 @@ rule initial_assessment:
     mem_mb=lambda wildcards, attempt: attempt * config["processMB"]
   shell:
     "Rscript {params.tool} {input.data} {params.proc} {params.run} {params.inst} {input.supp} > {log} 2>&1"
-    
+  
+# Generate report for chiva run
 rule run_report:
   input:
     data=PROC_DIR + "/output_data/standardized_uniq_sites." + RUN + ".rds",

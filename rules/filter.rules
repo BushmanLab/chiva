@@ -1,5 +1,6 @@
 # Sequence Filtering Rules
 
+# Filter sequences based on sequence quality
 rule seq_filter:
   input:
     R1=PROC_DIR + "/analysis_data/{sample}.R1.trim.fastq.gz",

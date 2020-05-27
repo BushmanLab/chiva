@@ -2,10 +2,10 @@
 # Look into turning the metadata into a dictionary
 # Sequence Trimming Rules
 
+# Trim linker from R1 reads
 rule seq_trim_linker:
   input:
-    reads=PROC_DIR + "/analysis_data/{sample}.R1.fastq.gz",
-    metadata=PROC_DIR + "/metadata/samples/{sample}.csv"
+    reads=PROC_DIR + "/analysis_data/{sample}.R1.fastq.gz"
   output:
     seq=PROC_DIR + "/analysis_data/{sample}.R1.trim.fastq.gz",
     primerID=PROC_DIR + "/analysis_data/{sample}.primerid.fastq.gz"
@@ -27,6 +27,7 @@ rule seq_trim_linker:
       --collectRandomIDs {output.primerID} --compress > {log} 2>&1
     """
 
+# Trim 8nt primer bit from R2 reads
 rule seq_trim_primer:
   input:
     PROC_DIR + "/analysis_data/{sample}.R2.fastq.gz"
@@ -50,10 +51,10 @@ rule seq_trim_primer:
       --compress > {log} 2>&1
     """
 
+# Trim LTR sequence from R2 reads
 rule seq_trim_ltr:
   input:
-    reads=PROC_DIR + "/analysis_data/{sample}.R2.trim.primer.fastq.gz",
-    metadata=PROC_DIR + "/metadata/samples/{sample}.csv"
+    reads=PROC_DIR + "/analysis_data/{sample}.R2.trim.primer.fastq.gz"
   output:
     PROC_DIR + "/analysis_data/{sample}.R2.trim.ltr.fastq.gz"
   params:
@@ -71,6 +72,7 @@ rule seq_trim_ltr:
       --noQualTrimming --compress > {log} 2>&1
     """
 
+# Trim CA from R2 reads
 rule seq_trim_CA:
   input:
     PROC_DIR + "/analysis_data/{sample}.R2.trim.ltr.fastq.gz",

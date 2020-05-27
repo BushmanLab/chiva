@@ -1,6 +1,7 @@
 # -*- mode: Snakemake -*-
 # Demultiplexing Rules
 
+# Demultiplex reads from sequencer output
 rule demultiplex:
   input:
     sampleInfo=ancient(config["Sample_Info"]),

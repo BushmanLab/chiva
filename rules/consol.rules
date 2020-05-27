@@ -1,6 +1,7 @@
 # -*- mode: Snakemake -*-
 # Sequence Consolidating Rules
 
+# Consolidate identical reads and create key to map reads to read ids
 rule consolidate:
   input:
     PROC_DIR + "/analysis_data/{sample}.{read}.filt.fastq.gz"
@@ -16,17 +17,3 @@ rule consolidate:
   shell:
     "Rscript {params.tool} {input} -o {output.consol} -k {output.key} > {log} 2>&1"
 
-rule consolidate_internal_seqs:
-  input:
-    PROC_DIR + "/analysis_data/internalfrags/{sample}.{read}.ns.if.fastq.gz"
-  output:
-    consol=temp(PROC_DIR + "/analysis_data/internalfrags/{sample}.{read}.if.consol.fasta"),
-    key=temp(PROC_DIR + "/analysis_data/internalfrags/{sample}.{read}.if.key.csv")
-  params:
-    tool=CODE_DIR + "/consol.R"
-  log:
-    PROC_DIR + "/logs/{sample}.{read}.if.consol.log"
-  resources:
-    mem_mb=lambda wildcards, attempt: attempt * config["consolMB"]
-  shell:
-    "Rscript {params.tool} {input} -o {output.consol} -k {output.key} > {log} 2>&1"
