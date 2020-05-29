@@ -51,21 +51,6 @@ def report_supp(wildcards):
   supp_str = supp_str + " -t " + config["reportFormat"]
   return supp_str
 
-# Create supplemental info file if it doesn't alrady exist
-rule create_supp:
-  input:
-    config["Sample_Info"]
-  output:
-    config["Supplemental_Info"]
-  params:
-    tool=CODE_DIR + "/create_supp.R",
-  log: 
-    PROC_DIR + "/logs/" + RUN + ".create_supp.log"
-  shell:
-    """
-    Rscript {params.tool} --sampleInfo {input} --supp {output} > {log} 2>&1
-    """
-
 # Standardize and condense int sites, filter for crossovers between samples, and create summary table
 rule initial_assessment:
   input:
