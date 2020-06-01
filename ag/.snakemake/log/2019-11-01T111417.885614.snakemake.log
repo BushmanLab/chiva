@@ -1,4 +1,0 @@
-Building DAG of jobs...
-MissingInputException in line 5 of /home/kevin/dev/chiva/rules/trim.rules:
-Missing input files for rule seq_trim_linker:
-/home/kevin/projects/bar_hiv/GTSP2715/analysis_data/GTSP2715-U3-1.U3.R1.fastq.gz
