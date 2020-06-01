@@ -5,7 +5,6 @@ Supplemental_Info : ""
 Processing_Path : "etc/tests"
 Ref_Genome : "hg38"
 Ref_Genome_Path : "genomes/hg38.2bit"
-Viral_Genomes : "genomes/viral_genomes"
 Aligner : "blat"
 
 # Sequence files
