@@ -1,7 +1,7 @@
 # -*- mode: Snakemake -*-
 # Post-Alignment Processing: BLAT
 
-# Map reads to genome and create list of unique sites for each sample
+# Create list of unique sites for each sample
 rule post_align:
   input:
     sampleR1=PROC_DIR + "/analysis_data/{sample}.R1.psl.gz",
