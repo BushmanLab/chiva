@@ -32,7 +32,7 @@ rule compress_align:
 
 rule generate_2bit:
   input: ancient(PROC_DIR + "/" + RUN + ".config.yml")
-  output: temp(config["Ref_Genome_Path"])
+  output: config["Ref_Genome_Path"]
   params: config["Ref_Genome"]
   shell:
     "Rscript {CODE_DIR}/generate_2bit_genome.R {params} {output}"
