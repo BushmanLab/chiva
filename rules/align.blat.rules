@@ -47,3 +47,23 @@ rule construct_viral_ref:
     PROC_DIR + "/logs/" + RUN + "viral.ref.log"
   shell:
     "Rscript {params.tool} {params.dir} {output} > {log} 2>&1"
+
+rule raw_align:
+  input:
+    fastq = PROC_DIR + "/analysis_data/{sample}.R2.fastq.gz",
+    genome = config["Ref_Genome_Path"]
+  output:
+    fasta=PROC_DIR + "/analysis_data/{sample}.R2.fasta",
+    psl=PROC_DIR + "/analysis_data/{sample}.raw.psl"
+  params:
+    config["BLATparams"]
+  log:
+    PROC_DIR + "/logs/{sample}.raw.blat.log"
+  resources:
+    mem_mb = lambda wildcards, attempt: attempt * config["alignMB"]
+  shell:
+    """
+    zcat {input.fastq} | fastq_to_fasta_fast > {output.fasta}
+    blat {input.genome} {output.fasta} {output.psl} \
+      {params} > {log} 2>&1
+    """
