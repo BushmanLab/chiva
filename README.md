@@ -13,9 +13,9 @@ Combined HIV integration site and genomic variant analysis pipeline.
 
 `chiva run configs/HIV_test.config.hml`
 
-# Processing Details
+# Processing Overview
 
-This section describes the details of each step in the processing pipeline
+This section provides an overview of each step in the processing pipeline.
 
 ## Demultiplexing
 
