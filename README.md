@@ -39,15 +39,15 @@ Unique R1 and R2 sequences are identified.  A key file is generated to map seque
 
 R1 and R2 reads are mapped, independently, against the hg38 genome using BLAT.  Default parameters can be found in the `configs/HIV_test.config.yml` file.
 
-## Int site identification
+## Integration site identification
 
 For each sample, BLAT output is analyzed using `tools/rscripts/couple.R` and a list of unique integration sites is generated.  We define a "unique site" as a unique pair of "anchor" (R2) and "adrift" (R1) sequences.
 
-## Condensing int sites
+## Condensing integration sites
 
 The list of unique sites for each sample is condensed across replicates and regions (U3 and U5) for each sample.  Sites found in both U3 and U5 regions are marked as "Dual Detect".
 
-## Filtering int sites
+## Filtering integration sites
 
 The final processing step is filtering of "crossover" sites which are sites suspected of spilling over from one sample to another.
 
