@@ -29,7 +29,7 @@ R2 reads for each sample are trimmed in three steps: First the 8nt "primer bit" 
 
 ## Filtering
 
-Read pairs that did not pass BOTH sets of trimming filters (R1 and R2) are removed from downstream analysis.
+Read pairs that did not pass both sets of trimming filters (R1 and R2) are removed from downstream analysis.
 
 ## Consolidation
 
