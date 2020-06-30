@@ -23,7 +23,7 @@ Reads are demultiplexed into R1 and R2 `.fastq.gz` files for each sample using a
 
 ## Trimming
 
-R1 reads for each sample are trimmed on the 5' end to remove the linker sequence used in that sample's library construction.  Reads not matching the linker sequence are filtered out.  The remaining reads are further trimmed on the 3' end to remove the reverse complement of the expected LTR sequence (a sign of the sequencer "over-reading").
+R1 reads for each sample are trimmed on the 5' end to remove the linker sequence used in that sample's library construction.  Reads not matching the linker sequence are filtered out.  The remaining reads are further trimmed on the 3' end to remove the reverse complement of the expected LTR sequence.
 
 R2 reads for each sample are trimmed in three steps: First the 8nt "primer bit" is removed from the 5' end, and reads without a perfect match are filtered out.  Second, an approximate match of the expected LTR sequence is removed from the 5' end, and reads without an approximate match are filtered out.  Lastly, a CA sequence is removed from the 5' end, and reads without a CA at the 5' end are filtered out.  This last bit is done because the CA is known to be the end of the LTR and thus remaining sequence should be human (or internal viral genome).
 
