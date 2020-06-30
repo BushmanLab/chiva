@@ -19,7 +19,7 @@ This section describes the details of each step in the processing pipeline
 
 ## Demultiplexing
 
-Reads are demultiplexed into sample `.fastq.gz` files using a standard demultiplexing algorithm.
+Reads are demultiplexed into R1 and R2 `.fastq.gz` files for each sample using a standard demultiplexing algorithm.
 
 ## Trimming
 
