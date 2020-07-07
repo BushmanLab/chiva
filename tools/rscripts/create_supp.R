@@ -39,6 +39,7 @@ samples <- as.character(unique(sampleInfo$sampleName))
 
 dbConn <- dbConnect(MySQL(), group = 'specimen_management')
 d <- dbGetQuery(dbConn, 'select * from gtsp')
+
 samplesToUse <- sapply(d$SpecimenAccNum, function(specimen) {
   if_else(length(grep(specimen, samples))>0, specimen, NULL)
 })
