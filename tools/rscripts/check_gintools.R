@@ -1,5 +1,7 @@
 # This script executes unit tests for the iguideSupport R-package
 
+library(dplyr)
+
 tto <- devtools::test(pkg = "tools/gintools")
 
 num_success <- sum(
