@@ -5,7 +5,7 @@
 rule seq_trim_linker:
   input:
     reads=PROC_DIR + "/analysis_data/{sample}.R1.fastq.gz",
-    metadata=PROC_DIR + "/metadata/samples/{sample}.csv"
+    #metadata=PROC_DIR + "/metadata/samples/{sample}.csv"
   output:
     seq=PROC_DIR + "/analysis_data/{sample}.R1.trim.fastq.gz",
     primerID=PROC_DIR + "/analysis_data/{sample}.primerid.fastq.gz"
@@ -53,7 +53,7 @@ rule seq_trim_primer:
 rule seq_trim_ltr:
   input:
     reads=PROC_DIR + "/analysis_data/{sample}.R2.trim.primer.fastq.gz",
-    metadata=PROC_DIR + "/metadata/samples/{sample}.csv"
+    #metadata=PROC_DIR + "/metadata/samples/{sample}.csv"
   output:
     PROC_DIR + "/analysis_data/{sample}.R2.trim.ltr.fastq.gz"
   params:
