@@ -219,6 +219,7 @@ else:
     R2_SEQ_INPUT = Path(config["Seq_Path"]) / config["R2"]
     I1_SEQ_INPUT = Path(config["Seq_Path"]) / config["I1"]
 
+print(R1_SEQ_INPUT)
 R1_SEQ_INPUT = str(R1_SEQ_INPUT)
 R2_SEQ_INPUT = str(R2_SEQ_INPUT)
 I1_SEQ_INPUT = str(I1_SEQ_INPUT)
