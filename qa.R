@@ -47,7 +47,7 @@ subsample_and_visualize <- function(dir, sampleInfoFile) {
     # u5r2 <- samples %>% filter(GTSP==thisGTSP & uniqueRegion=="U5") %>% pull(R2)
     # print(dada2::plotQualityProfile(u5r2))
     
-    #print(dada2::plotQualityProfile(c(samples %>% filter(GTSP==thisGTSP) %>% pull(R1), samples %>% filter(GTSP==thisGTSP) %>% pull(R2))))
+    print(dada2::plotQualityProfile(c(samples %>% filter(GTSP==thisGTSP) %>% pull(R1), samples %>% filter(GTSP==thisGTSP) %>% pull(R2))))
     
     #u3 <- readFastq(paste0(dir,"/subsample/fastq.gz/",thisGTSP,"_u3.R2.fastq.gz"))
     #dnaplotr::plotDNA(sort(sample(as.character(sread(u3)), min(1000,length(u3)))), xlab = paste0("U3 R2 reads for ",thisGTSP))
