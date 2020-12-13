@@ -535,7 +535,7 @@ red_adrift_hits <- GenomicRanges::reduce(
 #' present on opposite strands), and correct downstream orientation (if an 
 #' anchor loci is on the "+" strand, then the start of the anchor loci should be
 #' less than the paired adrift, and vice versa for "-" strand).
-#' (Inherent check for oneEach with findOverlaps())
+#' Inherent check for oneEach with findOverlaps()
 pairs <- GenomicRanges::findOverlaps(
   query = red_anchor_hits, 
   subject = red_adrift_hits,
@@ -909,7 +909,7 @@ printHead(
       "Alignments yeilded %1$s unique anchor sites from %2$s", 
       "properly-paired and aligned reads."
     ),
-    length(reduce(flank(uniq_sites, -1, start = TRUE), min.gapwidth = 0L)),
+    length(GenomicRanges::reduce(flank(uniq_sites, -1, start = TRUE), min.gapwidth = 0L)),
     length(uniq_sites)
   )
 )
@@ -1191,4 +1191,4 @@ if( args$stat != FALSE ){
 
 if( !is.null(args$saveImage) ) save.image(args$saveImage)
 
-q()
+#q()
