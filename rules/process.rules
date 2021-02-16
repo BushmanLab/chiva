@@ -13,7 +13,8 @@ rule post_align:
     multihit=PROC_DIR + "/analysis_data/multihits/{sample}.multihits.rds"
   params:
     tool=CODE_DIR + "/couple.R",
-    ref=config["Ref_Genome"]
+    ref=config["Ref_Genome"],
+    maxHits=config["maxHits"]
   log:
     PROC_DIR + "/logs/{sample}.couple.log"
   resources:
@@ -23,7 +24,7 @@ rule post_align:
     Rscript {params.tool} {input.sampleR2} {input.sampleR1} \
       -k {input.keyR2} {input.keyR1} \
       -o {output.uniq} --chimera {output.chimera} --multihit {output.multihit} \
-      -g {params.ref} > {log} 2>&1
+      --maxHits {params.maxHits} -g {params.ref} > {log} 2>&1
     """
 
 rule all_uniq_sites:

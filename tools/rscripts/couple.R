@@ -54,6 +54,11 @@ parser$add_argument(
 )
 
 parser$add_argument(
+  "--maxHits", nargs = 1, type = "integer", default = 1L,
+  help = desc$maxHits
+)
+
+parser$add_argument(
   "--stat", nargs = 1, type = "character", default = FALSE, help = desc$stat
 )
 
@@ -120,7 +125,7 @@ input_table <- input_table[
     c("anchorPSL :", "adriftPSL :", "keys :", "uniqOutput :", "condSites :", 
       "chimeras :", "multihits :", "stat :", "refGenome :", 
       "maxAlignStart :", "minPercentIdentity :", "minTempLength :", 
-      "maxTempLength :", "readNamePattern :"),
+      "maxTempLength :", "readNamePattern :", "maxHits :"),
     input_table$Variables
   ),
 ]
@@ -785,9 +790,11 @@ read_loci_mat <- data.frame(
 
 #' Templates aligning to single loci are termed unique, while templates
 #' aligning to multiple loci are termed multihits.
+#' User can now define a higher threshold of maxHits to allow processing
+#' of templates with multiple loci.
 read_pair_counts <- table(read_loci_mat$readPairKey)
-uniq_read_pairs <- names(read_pair_counts[read_pair_counts == 1])
-multihit_read_pairs <- names(read_pair_counts[read_pair_counts > 1])
+uniq_read_pairs <- names(read_pair_counts[read_pair_counts <= args$maxHits])
+multihit_read_pairs <- names(read_pair_counts[read_pair_counts > args$maxHits])
 
 #' Bin reads that would map to different loci on the same read (chimeras)
 #' All unique and multihit templates were mapped successfully to 
@@ -881,11 +888,21 @@ uniq_templates$readPairKey <- uniq_read_loci_mat$readPairKey
 
 uniq_keys <- keys[keys$readPairKey %in% uniq_read_pairs,]
 
-uniq_reads <- uniq_templates[
-  match(uniq_keys$readPairKey, uniq_templates$readPairKey)
-]
+full_keys <- dplyr::full_join(data.frame(readNames=uniq_keys$readNames,
+                                         readPairKey=uniq_keys$readPairKey),
+                              data.frame(readPairKey=uniq_templates$readPairKey,
+                                         lociPairKey=uniq_templates$lociPairKey),
+                              by="readPairKey")
+full_keys <- tidyr::unite(full_keys, fullKeyPair, c(readPairKey, lociPairKey), sep = ";")
 
-names(uniq_reads) <- as.character(uniq_keys$readNames)
+uniq_templates$fullKeyPair <- paste(uniq_templates$readPairKey, uniq_templates$lociPairKey, sep = ";")
+
+uniq_reads <- uniq_templates[
+  match(full_keys$fullKeyPair, uniq_templates$fullKeyPair)
+]
+uniq_reads$fullKeyPair <- NULL
+
+names(uniq_reads) <- as.character(full_keys$readNames)
 
 uniq_reads$sampleName <- stringr::str_extract(
   string = as.character(keys$anchorSeqID[
@@ -906,7 +923,7 @@ printHead(
   title = "Head of uniquely mapped genomic loci.",
   caption = sprintf(
     paste(
-      "Alignments yeilded %1$s unique anchor sites from %2$s", 
+      "Alignments yielded %1$s unique anchor sites from %2$s", 
       "properly-paired and aligned reads."
     ),
     length(GenomicRanges::reduce(flank(uniq_sites, -1, start = TRUE), min.gapwidth = 0L)),
