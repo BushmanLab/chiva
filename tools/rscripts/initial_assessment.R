@@ -31,20 +31,18 @@ uniq_reads <- fread(args[1], sep = ",") %>%
   select(chr, position, breakpoint, strand, sampleName, counts) %>% 
   db_to_granges(split_sampleName = FALSE)
 
-# Typically refinement of breakpoints should be done at the
-# individual sample level, this helps increase the abundance range.
-# For this study though, abundances are expected to all be very low.
-# And therefore we can increase the chances of isolating crossovers
-# if we refine the breakpoints of all samples together.
+# Refinement of breakpoints should be done at the
+# individual sample level which helps increase the abundance range.
 
-## By each sample independently.
-#uniq_sites <- unlist(GRangesList(lapply(
-#  split(uniq_reads, uniq_reads$samplename),
-#  refine_breakpoints, counts = "counts")))
+uniq_sites <- unlist(GRangesList(lapply(
+ split(uniq_reads, uniq_reads$samplename),
+ refine_breakpoints, counts = "counts")))
 
-## All samples refined together
-uniq_sites <- refine_breakpoints(uniq_reads, counts = "counts")
-uniq_sites <- unique_granges(uniq_sites, sum.cols = "counts")
+# For studies where abundances are expected to be low, we can increase
+# the chances of isolating crossovers if we refine the breakpoints of all samples together.
+
+# uniq_sites <- refine_breakpoints(uniq_reads, counts = "counts")
+# uniq_sites <- unique_granges(uniq_sites, sum.cols = "counts")
 
 uniq_sites <- standardize_sites(uniq_sites)
 uniq_sites <- unique_granges(uniq_sites, sum.cols = "counts")
