@@ -456,7 +456,8 @@ fil_sites <- input_data$fil_uniq_sites %>%
     replicate = as.numeric(stringr::str_extract(samplename, "[0-9]+$"))
     #replicate = replicate - 4 * (ceiling(replicate/4) - 1) + 4 * run
   ) %>%
-  dplyr::left_join(cond_overview, by = "specimen") %>%
+#  dplyr::left_join(cond_overview, by = c("specimen", "patient")) %>%
+  dplyr::left_join(cond_overview, by = c("specimen")) %>%
   dplyr::mutate(
     patient = factor(patient, levels = unique(cond_overview$patient)),
     specimen = factor(specimen, levels = levels(cond_overview$specimen)),
