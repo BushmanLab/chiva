@@ -41,24 +41,24 @@ uniq_reads <- fread(args[1], sep = ",") %>%
 
 # Standardization of sites should be done at the patient level.
 
-# supp_data <- read.table(args[5], sep = ",", header = TRUE)
-# uniq_sites$GTSP <- substr(uniq_sites$samplename, 1, 8)
-# uniq_sites$patient <- supp_data$patient[match(uniq_sites$GTSP, supp_data$specimen)]
-# uniq_sites <- unlist(GRangesList(lapply(
-#   split(uniq_sites, uniq_sites$patient),
-#   standardize_sites, counts = "counts")))
-# uniq_sites <- unique_granges(uniq_sites, sum.cols = "counts")
-# uniq_sites$GTSP <- NULL
-# uniq_sites$patient <- NULL
+supp_data <- read.table(args[5], sep = ",", header = TRUE)
+uniq_sites$GTSP <- substr(uniq_sites$samplename, 1, 8)
+uniq_sites$patient <- supp_data$patient[match(uniq_sites$GTSP, supp_data$specimen)]
+uniq_sites <- unlist(GRangesList(lapply(
+  split(uniq_sites, uniq_sites$patient),
+  standardize_sites, counts = "counts")))
+uniq_sites <- unique_granges(uniq_sites, sum.cols = "counts")
+uniq_sites$GTSP <- NULL
+uniq_sites$patient <- NULL
 
 
 # For studies where abundances are expected to be low, we can increase
 # the chances of isolating crossovers if we refine the breakpoints of all samples together.
 
-uniq_sites <- refine_breakpoints(uniq_reads, counts = "counts")
-uniq_sites <- unique_granges(uniq_sites, sum.cols = "counts")
-uniq_sites <- standardize_sites(uniq_sites, counts = "counts")
-uniq_sites <- unique_granges(uniq_sites, sum.cols = "counts")
+# uniq_sites <- refine_breakpoints(uniq_reads, counts = "counts")
+# uniq_sites <- unique_granges(uniq_sites, sum.cols = "counts")
+# uniq_sites <- standardize_sites(uniq_sites, counts = "counts")
+# uniq_sites <- unique_granges(uniq_sites, sum.cols = "counts")
 
 
 
