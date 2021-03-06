@@ -34,10 +34,10 @@ uniq_reads <- fread(args[1], sep = ",") %>%
 # Refinement of breakpoints should be done at the
 # individual sample level which helps increase the abundance range.
 
-# uniq_sites <- unlist(GRangesList(lapply(
-#  split(uniq_reads, uniq_reads$samplename),
-#  refine_breakpoints, counts = "counts")))
-# uniq_sites <- unique_granges(uniq_sites, sum.cols = "counts")
+uniq_sites <- unlist(GRangesList(lapply(
+ split(uniq_reads, uniq_reads$samplename),
+ refine_breakpoints, counts = "counts")))
+uniq_sites <- unique_granges(uniq_sites, sum.cols = "counts")
 
 # Standardization of sites should be done at the patient level.
 
