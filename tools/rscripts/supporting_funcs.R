@@ -406,6 +406,10 @@ filter_crossovers <- function(sites, sample_col = NULL, counts_col = NULL,
     return(fil_frags)
     
   }))
+  
+  # If there are no fragments to filter, then there are no crossover sites
+  # Return original list of sites
+  return(sites)
 
   # Transfer the reassignment data back into the dataset using the pos_id, bp,
   # and ori_sample data to identify the fragments. Then set their sample_col 
